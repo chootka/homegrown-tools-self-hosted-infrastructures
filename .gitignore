@@ -30,3 +30,6 @@ venv/
 
 # Logs
 *.log
+
+# Claude Code
+CLAUDE.md
