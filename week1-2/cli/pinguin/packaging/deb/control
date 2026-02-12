@@ -1,0 +1,11 @@
+Package: pinguin
+Version: {{VERSION}}
+Section: net
+Priority: optional
+Architecture: {{ARCH}}
+Maintainer: chootka <chootka@users.noreply.github.com>
+Description: Local network scanner with color-coded ping results
+ Pinguin discovers devices on your local network via ARP table
+ inspection, pings them concurrently, and displays a color-coded
+ table of latency results. Built with Go, zero external dependencies.
+Homepage: https://github.com/chootka/pinguin

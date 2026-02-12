@@ -1,0 +1,32 @@
+# OS files
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+.npm
+npm-debug.log*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# Environment / secrets
+.env
+.env.local
+.env.*
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.claude/
+
+# Logs
+*.log

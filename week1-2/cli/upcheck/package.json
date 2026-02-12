@@ -1,0 +1,18 @@
+{
+  "name": "upcheck",
+  "version": "1.0.0",
+  "description": "A CLI tool to check whether your web services are up or down.",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "upcheck": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "commander": "^12.0.0"
+  },
+  "keywords": ["cli", "health-check", "server", "monitoring"],
+  "license": "MIT"
+}
