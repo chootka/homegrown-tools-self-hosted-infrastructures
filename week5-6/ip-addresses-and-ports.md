@@ -63,7 +63,7 @@ When you type `http://192.168.1.42:3000` in a browser, you're saying:
 ```
   http://  192.168.1.42  :  3000
     │          │            │
-    │          │            └── go to port 3000 (Gitea)
+    │          │            └── go to port 3000 (some app)
     │          └─────────────── on this computer
     └────────────────────────── using this protocol
 ```
