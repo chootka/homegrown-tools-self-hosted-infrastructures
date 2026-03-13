@@ -42,7 +42,7 @@ Every networked computer has one IP address but **65,535 available ports**.
         ║   │                       │                                 │  ║
         ║   ├───────────────────────┤                                 │  ║
         ║   │                       │                                 │  ║
-        ║   │   :3000 ── Gitea      │   self-hosted git forge         │  ║
+        ║   │   :3000 ── some app    │   could be any application      │  ║
         ║   │                       │                                 │  ║
         ║   ├───────────────────────┤                                 │  ║
         ║   │                       │                                 │  ║
