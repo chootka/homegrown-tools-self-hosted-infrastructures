@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Afterhours Mesh</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Courier New", monospace;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 1.4em;
+      color: #00cc66;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 0.85em;
+      margin-bottom: 20px;
+    }
+
+    #status {
+      font-size: 0.85em;
+      margin-bottom: 16px;
+    }
+
+    .connected { color: #00cc66; }
+    .disconnected { color: #cc3333; }
+
+    #messages {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .message {
+      background: #151515;
+      border-left: 3px solid #00cc66;
+      padding: 12px 16px;
+      border-radius: 2px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .message .meta {
+      font-size: 0.75em;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .message .node {
+      color: #00cc66;
+      font-weight: bold;
+    }
+
+    .message .body {
+      font-size: 0.95em;
+      word-wrap: break-word;
+    }
+
+    .message.nodeinfo { border-left-color: #3388cc; }
+    .message.nodeinfo .node { color: #3388cc; }
+
+    .message.position { border-left-color: #cc8833; }
+    .message.position .node { color: #cc8833; }
+
+    .message.telemetry { border-left-color: #8833cc; }
+    .message.telemetry .node { color: #8833cc; }
+
+    .empty {
+      color: #444;
+      font-style: italic;
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>afterhours mesh</h1>
+  <p class="subtitle">live messages from the meshtastic network</p>
+  <p id="status" class="disconnected">connecting...</p>
+  <div id="messages">
+    <p class="empty" id="empty-msg">waiting for messages...</p>
+  </div>
+
+  <script>
+    const messagesDiv = document.getElementById('messages');
+    const statusEl = document.getElementById('status');
+    const emptyMsg = document.getElementById('empty-msg');
+
+    function connect() {
+      const source = new EventSource('/stream');
+
+      source.onopen = () => {
+        statusEl.textContent = 'connected';
+        statusEl.className = 'connected';
+      };
+
+      source.onerror = () => {
+        statusEl.textContent = 'disconnected — retrying...';
+        statusEl.className = 'disconnected';
+        source.close();
+        setTimeout(connect, 3000);
+      };
+
+      source.onmessage = (event) => {
+        if (emptyMsg) emptyMsg.remove();
+
+        const data = JSON.parse(event.data);
+        const el = document.createElement('div');
+
+        // Determine message type for styling
+        let typeClass = '';
+        let displayType = data.type || 'unknown';
+        let body = '';
+
+        if (typeof data.payload === 'string') {
+          // Text message
+          body = data.payload;
+        } else if (data.payload && typeof data.payload === 'object') {
+          // Structured payload (nodeinfo, position, telemetry, etc.)
+          if (data.payload.text) {
+            body = data.payload.text;
+          } else {
+            body = JSON.stringify(data.payload, null, 2);
+            if (displayType.includes('NODEINFO')) typeClass = 'nodeinfo';
+            else if (displayType.includes('POSITION')) typeClass = 'position';
+            else if (displayType.includes('TELEMETRY')) typeClass = 'telemetry';
+          }
+        } else {
+          body = JSON.stringify(data.payload);
+        }
+
+        const time = data.timestamp
+          ? new Date(data.timestamp * 1000).toLocaleTimeString()
+          : new Date().toLocaleTimeString();
+
+        const nodeId = data.from || 'unknown';
+
+        el.className = `message ${typeClass}`;
+        el.innerHTML = `
+          <div class="meta">
+            <span class="node">!${nodeId.toString(16)}</span>
+            &middot; ${displayType} &middot; ${time}
+          </div>
+          <div class="body">${body.includes('\n') ? '<pre>' + body + '</pre>' : body}</div>
+        `;
+
+        messagesDiv.prepend(el);
+      };
+    }
+
+    connect();
+  </script>
+</body>
+</html>
