@@ -7,7 +7,7 @@ import paho.mqtt.client as mqtt
 # ---- Configuration ----
 MQTT_BROKER = "dweb2025.nohost.me"
 MQTT_PORT = 1883
-MQTT_TOPIC = "msh/EU_868/2/json/afterhours/#"
+MQTT_TOPIC = "msh/afterhours/2/json/broadcasts/#"
 
 app = Flask(__name__)
 
