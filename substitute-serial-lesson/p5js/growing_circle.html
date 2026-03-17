@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Growing Circle — p5.js + Web Serial</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+  <style> body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #111; flex-direction: column; } button { margin: 20px; padding: 12px 24px; font-size: 18px; cursor: pointer; } </style>
+</head>
+<body>
+<script>
+let port;
+let circleSize = 10;
+
+function setup() {
+  createCanvas(600, 600);
+
+  // Web Serial requires a user click to open a port
+  let btn = createButton('Connect Arduino');
+  btn.style('padding', '12px 24px');
+  btn.style('font-size', '18px');
+  btn.mousePressed(connectSerial);
+}
+
+function draw() {
+  background(30);
+  fill(255, 150, 0);
+  noStroke();
+  ellipse(width / 2, height / 2, circleSize, circleSize);
+}
+
+async function connectSerial() {
+  port = await navigator.serial.requestPort();
+  await port.open({ baudRate: 9600 });
+
+  const reader = port.readable.getReader();
+  let buffer = '';
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    buffer += new TextDecoder().decode(value);
+
+    let lines = buffer.split('\n');
+    buffer = lines.pop(); // keep incomplete line in buffer
+
+    for (let line of lines) {
+      let v = parseInt(line.trim());
+      if (!isNaN(v)) {
+        circleSize = map(v, 0, 1023, 10, 500);
+      }
+    }
+  }
+}
+</script>
+</body>
+</html>

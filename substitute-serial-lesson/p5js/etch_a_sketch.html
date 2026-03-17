@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Etch A Sketch — p5.js + Web Serial</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+  <style> body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #111; flex-direction: column; } </style>
+</head>
+<body>
+<script>
+let port;
+let penX = 0, penY = 0;
+let started = false;
+
+function setup() {
+  createCanvas(800, 800);
+  background(255);
+
+  let btn = createButton('Connect Arduino');
+  btn.style('padding', '12px 24px');
+  btn.style('font-size', '18px');
+  btn.mousePressed(connectSerial);
+}
+
+function draw() {
+  // empty — drawing happens when serial data arrives
+}
+
+async function connectSerial() {
+  port = await navigator.serial.requestPort();
+  await port.open({ baudRate: 9600 });
+
+  const reader = port.readable.getReader();
+  let buffer = '';
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    buffer += new TextDecoder().decode(value);
+
+    let lines = buffer.split('\n');
+    buffer = lines.pop();
+
+    for (let ln of lines) {
+      ln = ln.trim();
+
+      let values = ln.split(',');
+      if (values.length < 2) continue;
+
+      let newX = map(int(values[0]), 0, 1023, 0, width);
+      let newY = map(int(values[1]), 0, 1023, 0, height);
+
+      if (started) {
+        stroke(0);
+        strokeWeight(3);
+        line(penX, penY, newX, newY);
+      }
+
+      penX = newX;
+      penY = newY;
+      started = true;
+    }
+  }
+}
+</script>
+</body>
+</html>

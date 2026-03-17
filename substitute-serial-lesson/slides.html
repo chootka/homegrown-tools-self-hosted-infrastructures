@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Arduino → Processing: Serial Communication</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: #111;
+    color: #eee;
+  }
+
+  .slide {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    padding: 60px 80px;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .slide.active { display: flex; }
+
+  h1 { font-size: 3.2em; margin-bottom: 0.4em; color: #ff9600; }
+  h2 { font-size: 2.4em; margin-bottom: 0.5em; color: #ff9600; }
+  h3 { font-size: 1.6em; margin-bottom: 0.4em; color: #ffb84d; }
+  p, li { font-size: 1.4em; line-height: 1.6; }
+  ul { margin-left: 1.2em; }
+  li { margin-bottom: 0.4em; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    background: #222;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  pre {
+    background: #1a1a2e;
+    padding: 24px 30px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 20px 0;
+    border-left: 4px solid #ff9600;
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.85em;
+    line-height: 1.5;
+    color: #e0e0e0;
+  }
+
+  .diagram {
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 1.3em;
+    background: #1a1a2e;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    margin: 20px 0;
+    color: #ffb84d;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 20px;
+  }
+
+  .col { }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 1.2em;
+  }
+
+  th, td {
+    padding: 12px 20px;
+    text-align: left;
+    border-bottom: 1px solid #333;
+  }
+
+  th { color: #ff9600; }
+
+  .highlight { color: #ff9600; font-weight: bold; }
+  .warning { color: #ff4444; font-weight: bold; }
+  .subtitle { font-size: 1.6em; color: #999; margin-top: 10px; }
+
+  .nav {
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    font-size: 0.9em;
+    color: #555;
+  }
+
+  .center { text-align: center; }
+
+  .big { font-size: 2em; margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: Title -->
+<div class="slide active">
+  <h1>Arduino → Processing</h1>
+  <p class="subtitle">Sending data over serial to make things on screen</p>
+</div>
+
+<!-- SLIDE 2: What is Serial? -->
+<div class="slide">
+  <h2>What is Serial Communication?</h2>
+  <ul>
+    <li>A way for two devices to talk to each other over a wire</li>
+    <li>Data is sent one byte at a time (that's the "serial" part)</li>
+    <li>Your Arduino already uses it — that's what <code>Serial.println()</code> does</li>
+    <li>The Serial Monitor shows you what Arduino is sending</li>
+  </ul>
+  <div class="diagram">
+    Arduino &nbsp; ——— USB cable ———&gt; &nbsp; Computer
+  </div>
+</div>
+
+<!-- SLIDE 3: What is Processing? -->
+<div class="slide">
+  <h2>What is Processing?</h2>
+  <ul>
+    <li>Free, open-source creative coding environment</li>
+    <li>Made for artists and designers</li>
+    <li>Creates a window where you draw with code</li>
+    <li>If you know Arduino, you already know the structure</li>
+  </ul>
+  <table>
+    <tr><th>Arduino</th><th>Processing</th></tr>
+    <tr><td><code>setup()</code> runs once</td><td><code>setup()</code> runs once</td></tr>
+    <tr><td><code>loop()</code> runs forever</td><td><code>draw()</code> runs ~60x/sec</td></tr>
+    <tr><td><code>Serial.println()</code> sends data</td><td>Can receive serial data</td></tr>
+    <tr><td>Talks to hardware</td><td>Draws to screen</td></tr>
+  </table>
+</div>
+
+<!-- SLIDE 4: The Big Idea -->
+<div class="slide">
+  <h2>The Big Idea</h2>
+  <div class="diagram">
+    [ Physical World ] → Arduino → Serial → Processing → [ Screen ]
+  </div>
+  <p class="big center">Sensors become visuals.</p>
+</div>
+
+<!-- SLIDE 5: Important Rule -->
+<div class="slide">
+  <h2 class="warning">One Rule</h2>
+  <p class="big">Only one program can use the serial port at a time.</p>
+  <ul>
+    <li>If the Arduino Serial Monitor is open, Processing can't connect</li>
+    <li><span class="highlight">Always close the Serial Monitor</span> before running Processing</li>
+    <li>If you get "port busy" — this is probably why</li>
+  </ul>
+</div>
+
+<!-- SLIDE 6: Part 1 Title -->
+<div class="slide">
+  <h2>Part 1: Growing a Circle</h2>
+  <p class="subtitle">1 potentiometer → circle size</p>
+  <div class="diagram">
+    Potentiometer → analogRead() → Serial.println() → USB → Processing → circle
+  </div>
+</div>
+
+<!-- SLIDE 7: Circuit -->
+<div class="slide">
+  <h2>Circuit</h2>
+  <ul>
+    <li>Potentiometer outer pins → <code>5V</code> and <code>GND</code></li>
+    <li>Potentiometer middle pin → <code>A0</code></li>
+  </ul>
+  <p style="margin-top: 30px; color: #999;">That's it. One component, three wires.</p>
+</div>
+
+<!-- SLIDE 8: Arduino Code -->
+<div class="slide">
+  <h2>Arduino Code</h2>
+  <pre><code>int POT_PIN = A0;
+
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  int potValue = analogRead(POT_PIN);
+  Serial.println(potValue);
+  delay(50);
+}</code></pre>
+  <p>Upload this, then verify it works with the Serial Monitor. You should see numbers from 0–1023.</p>
+</div>
+
+<!-- SLIDE 9: Processing Code -->
+<div class="slide">
+  <h2>Processing Code — Key Parts</h2>
+  <pre><code>import processing.serial.*;   // load the serial library
+Serial port;                   // our connection to Arduino
+
+void setup() {
+  size(600, 600);
+  printArray(Serial.list());   // find your Arduino's port
+  port = new Serial(this, Serial.list()[0], 9600);
+  port.bufferUntil('\n');      // read one line at a time
+}</code></pre>
+  <p><span class="highlight">Change the index [0]</span> to match your Arduino in the list.</p>
+</div>
+
+<!-- SLIDE 10: Processing serialEvent -->
+<div class="slide">
+  <h2>Processing Code — Receiving Data</h2>
+  <pre><code>void draw() {
+  background(30);
+  fill(255, 150, 0);
+  noStroke();
+  ellipse(width/2, height/2, circleSize, circleSize);
+}
+
+// Runs every time a line arrives from Arduino
+void serialEvent(Serial p) {
+  String s = p.readStringUntil('\n');
+  if (s == null) return;
+  int v = int(trim(s));
+  circleSize = int(map(v, 0, 1023, 10, 500));
+}</code></pre>
+</div>
+
+<!-- SLIDE 11: Try it -->
+<div class="slide">
+  <h2>Try It</h2>
+  <ol style="font-size: 1.4em; line-height: 2;">
+    <li>Upload Arduino code to board</li>
+    <li><span class="warning">Close the Serial Monitor</span></li>
+    <li>Open Processing, paste the code, hit Play</li>
+    <li>Turn the knob</li>
+  </ol>
+</div>
+
+<!-- SLIDE 12: Part 2 Title -->
+<div class="slide">
+  <h2>Part 2: Etch A Sketch</h2>
+  <p class="subtitle">2 potentiometers → draw on screen</p>
+  <div class="diagram">
+    Pot 1 (X) → analogRead(A0) ─┐<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├→ Serial.println("x,y") → Processing<br>
+    Pot 2 (Y) → analogRead(A1) ─┘
+  </div>
+</div>
+
+<!-- SLIDE 13: Sending Two Values -->
+<div class="slide">
+  <h2>Sending Two Values</h2>
+  <p>How do we send two numbers over one serial connection?</p>
+  <p class="big">Separate them with a comma: <code>"512,300"</code></p>
+  <pre><code>Serial.print(x);       // send x
+Serial.print(",");     // send a comma
+Serial.println(y);     // send y + newline</code></pre>
+  <p>On the other side, we <code>split()</code> the string at the comma to get both values back.</p>
+</div>
+
+<!-- SLIDE 14: Arduino Code Part 2 -->
+<div class="slide">
+  <h2>Arduino Code — Etch A Sketch</h2>
+  <pre><code>int POT_X = A0;
+int POT_Y = A1;
+
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  int x = analogRead(POT_X);
+  int y = analogRead(POT_Y);
+
+  Serial.print(x);
+  Serial.print(",");
+  Serial.println(y);
+
+  delay(20);
+}</code></pre>
+</div>
+
+<!-- SLIDE 15: Processing receiving two values -->
+<div class="slide">
+  <h2>Processing — Parsing Two Values</h2>
+  <pre><code>void serialEvent(Serial p) {
+  String s = p.readStringUntil('\n');
+  if (s == null) return;
+  s = trim(s);
+
+  // "512,300" → ["512", "300"]
+  String[] values = split(s, ',');
+  if (values.length < 2) return;
+
+  float newX = map(int(values[0]), 0, 1023, 0, width);
+  float newY = map(int(values[1]), 0, 1023, 0, height);
+
+  stroke(0);
+  strokeWeight(3);
+  line(penX, penY, newX, newY);
+
+  penX = newX;
+  penY = newY;
+}</code></pre>
+</div>
+
+<!-- SLIDE 16: The trick -->
+<div class="slide">
+  <h2>The Drawing Trick</h2>
+  <p class="big">No <code>background()</code> in <code>draw()</code>.</p>
+  <ul>
+    <li>In Part 1, we called <code>background(30)</code> every frame — erasing the old circle</li>
+    <li>Here, we skip it — so every line stays on screen</li>
+    <li>The drawing accumulates, like pen on paper</li>
+  </ul>
+</div>
+
+<!-- SLIDE 17: Bonus -->
+<div class="slide">
+  <h2>Bonus: Clear Button</h2>
+  <ul>
+    <li>Add a button on pin 2 (using <code>INPUT_PULLUP</code>)</li>
+    <li>When pressed, Arduino sends <code>"CLEAR"</code> instead of coordinates</li>
+    <li>Processing checks for <code>"CLEAR"</code> and resets the canvas</li>
+  </ul>
+  <pre><code>// Arduino side
+if (digitalRead(BUTTON_PIN) == LOW) {
+  Serial.println("CLEAR");
+  delay(300);
+  return;
+}
+
+// Processing side
+if (s.equals("CLEAR")) {
+  background(255);
+  return;
+}</code></pre>
+</div>
+
+<!-- SLIDE 18: p5.js alternative -->
+<div class="slide">
+  <h2>Alternative: p5.js</h2>
+  <p>You can also do this in the browser using p5.js + Web Serial API.</p>
+  <ul>
+    <li>Same concepts, JavaScript instead of Java</li>
+    <li>Uses the <span class="highlight">Web Serial API</span> (Chrome/Edge only)</li>
+    <li>Requires a "Connect" button click (browser security)</li>
+    <li>Arduino code stays exactly the same</li>
+  </ul>
+  <table>
+    <tr><th>Processing</th><th>p5.js</th></tr>
+    <tr><td><code>Serial.list()[0]</code></td><td>Browser port picker</td></tr>
+    <tr><td><code>serialEvent()</code></td><td><code>async/await</code> reader</td></tr>
+    <tr><td>Desktop app</td><td>Runs in browser</td></tr>
+  </table>
+</div>
+
+<!-- SLIDE 19: Troubleshooting -->
+<div class="slide">
+  <h2>Troubleshooting</h2>
+  <table>
+    <tr><th>Problem</th><th>Fix</th></tr>
+    <tr><td>"Port busy"</td><td>Close the Serial Monitor</td></tr>
+    <tr><td>No data in Processing</td><td>Check port index — <code>printArray(Serial.list())</code></td></tr>
+    <tr><td>Garbled data</td><td>Baud rate must match: <code>9600</code> on both sides</td></tr>
+    <tr><td>Etch A Sketch jumps at start</td><td>Normal — first line may be incomplete</td></tr>
+    <tr><td>p5.js: no Web Serial</td><td>Use Chrome or Edge (not Firefox/Safari)</td></tr>
+  </table>
+</div>
+
+<!-- SLIDE 20: Key Takeaways -->
+<div class="slide">
+  <h2>Key Takeaways</h2>
+  <ul>
+    <li><code>Serial.println()</code> sends data as text, one line at a time</li>
+    <li>Use commas to send multiple values: <code>"x,y"</code></li>
+    <li>Use <code>split()</code> to take them apart on the other side</li>
+    <li><code>map()</code> converts ranges — works in both Arduino and Processing</li>
+    <li>Close the Serial Monitor before running Processing</li>
+    <li>Physical inputs → screen visuals. That's the bridge.</li>
+  </ul>
+</div>
+
+<div class="nav">
+  <span id="counter"></span> &nbsp; | &nbsp; ← → arrow keys to navigate
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+let current = 0;
+const counter = document.getElementById('counter');
+
+function show(n) {
+  slides[current].classList.remove('active');
+  current = (n + slides.length) % slides.length;
+  slides[current].classList.add('active');
+  counter.textContent = (current + 1) + ' / ' + slides.length;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') show(current + 1);
+  if (e.key === 'ArrowLeft') show(current - 1);
+});
+
+show(0);
+</script>
+</body>
+</html>
