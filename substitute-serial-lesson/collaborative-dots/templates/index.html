@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collaborative Dots</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+    }
+    canvas { display: block; }
+
+    #ui {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #connect-btn {
+      background: #4ECDC4;
+      color: #1a1a2e;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    #connect-btn:hover { background: #45B7D1; }
+    #connect-btn:disabled {
+      background: #555;
+      cursor: default;
+      color: #999;
+    }
+
+    #status {
+      color: #888;
+      font-size: 14px;
+    }
+    #status .connected { color: #82E0AA; }
+    #status .serial { color: #F7DC6F; }
+
+    #my-name {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+      font-size: 18px;
+      font-family: 'Courier New', monospace;
+      padding: 8px 16px;
+      border-radius: 6px;
+      background: rgba(0,0,0,0.4);
+    }
+
+    #user-count {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 10;
+      color: #666;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+
+<div id="ui">
+  <button id="connect-btn" onclick="connectArduino()">Connect Arduino</button>
+  <div id="status">
+    <span class="connected">Connecting to server...</span>
+  </div>
+</div>
+<div id="my-name"></div>
+<div id="user-count"></div>
+
+<script>
+// --- State ---
+let dots = {};           // { sid: { name, color, x, y, displayX, displayY } }
+let myName = "";
+let myColor = "#fff";
+let serialConnected = false;
+let userCount = 0;
+
+// --- Socket.IO ---
+const socket = io();
+
+socket.on("connect", () => {
+  document.querySelector("#status .connected").textContent = "Connected to server";
+});
+
+socket.on("disconnect", () => {
+  document.querySelector("#status .connected").textContent = "Disconnected from server";
+});
+
+socket.on("assigned", (data) => {
+  myName = data.name;
+  myColor = data.color;
+  document.getElementById("my-name").textContent = myName;
+  document.getElementById("my-name").style.color = myColor;
+});
+
+socket.on("all_positions", (data) => {
+  // Update or add dots, initialize display positions for new ones
+  for (let sid in data) {
+    if (!dots[sid]) {
+      dots[sid] = {
+        ...data[sid],
+        displayX: data[sid].x,
+        displayY: data[sid].y,
+      };
+    } else {
+      dots[sid].x = data[sid].x;
+      dots[sid].y = data[sid].y;
+      dots[sid].name = data[sid].name;
+      dots[sid].color = data[sid].color;
+    }
+  }
+  // Remove disconnected dots
+  for (let sid in dots) {
+    if (!(sid in data)) delete dots[sid];
+  }
+  userCount = Object.keys(dots).length;
+  document.getElementById("user-count").textContent = userCount + " connected";
+});
+
+// --- Web Serial ---
+async function connectArduino() {
+  if (!("serial" in navigator)) {
+    alert("Web Serial API not supported. Use Chrome or Edge.");
+    return;
+  }
+
+  try {
+    const port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 9600 });
+
+    document.getElementById("connect-btn").disabled = true;
+    document.getElementById("connect-btn").textContent = "Arduino Connected";
+    let statusEl = document.getElementById("status");
+    statusEl.innerHTML += '<br><span class="serial">Reading serial data...</span>';
+    serialConnected = true;
+
+    const reader = port.readable.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+
+      // Process complete lines
+      let lines = buffer.split("\n");
+      buffer = lines.pop(); // keep incomplete line in buffer
+
+      for (let line of lines) {
+        line = line.trim();
+        if (!line) continue;
+
+        let parts = line.split(",");
+        if (parts.length === 2) {
+          let rawX = parseInt(parts[0]);
+          let rawY = parseInt(parts[1]);
+
+          if (!isNaN(rawX) && !isNaN(rawY)) {
+            // Map 0-1023 to 0-1 (normalized)
+            let x = rawX / 1023;
+            let y = rawY / 1023;
+            socket.emit("position", { x, y });
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Serial error:", err);
+    alert("Could not connect to Arduino: " + err.message);
+  }
+}
+
+// --- p5.js ---
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  textFont("Courier New");
+  textAlign(CENTER, TOP);
+}
+
+function draw() {
+  background(26, 26, 46, 40); // slight trail effect
+
+  // Draw each dot
+  for (let sid in dots) {
+    let d = dots[sid];
+
+    // Smooth interpolation
+    d.displayX = lerp(d.displayX, d.x, 0.15);
+    d.displayY = lerp(d.displayY, d.y, 0.15);
+
+    let px = d.displayX * width;
+    let py = d.displayY * height;
+
+    let c = color(d.color);
+
+    // Glow layers
+    noStroke();
+    let glowColor = color(red(c), green(c), blue(c), 15);
+    fill(glowColor);
+    ellipse(px, py, 80, 80);
+
+    glowColor = color(red(c), green(c), blue(c), 30);
+    fill(glowColor);
+    ellipse(px, py, 55, 55);
+
+    glowColor = color(red(c), green(c), blue(c), 60);
+    fill(glowColor);
+    ellipse(px, py, 40, 40);
+
+    // Main dot
+    fill(c);
+    ellipse(px, py, 30, 30);
+
+    // Bright center
+    fill(255, 255, 255, 120);
+    ellipse(px, py, 10, 10);
+
+    // Name label
+    fill(red(c), green(c), blue(c), 200);
+    textSize(12);
+    text(d.name, px, py + 22);
+  }
+
+  // If no one is connected yet
+  if (Object.keys(dots).length === 0) {
+    fill(100);
+    textSize(16);
+    textAlign(CENTER, CENTER);
+    text("Waiting for connections...", width / 2, height / 2);
+    textAlign(CENTER, TOP);
+  }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
+</script>
+
+</body>
+</html>
