@@ -2,8 +2,11 @@ import json
 import os
 import queue
 import threading
+from dotenv import load_dotenv
 from flask import Flask, Response, render_template
 import paho.mqtt.client as mqtt
+
+load_dotenv()
 
 # ---- Configuration ----
 MQTT_BROKER = os.environ.get("MQTT_BROKER", "dweb2025.nohost.me")
