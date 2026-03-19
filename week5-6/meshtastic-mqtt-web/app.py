@@ -1,19 +1,25 @@
 import json
+import os
 import queue
 import threading
 from flask import Flask, Response, render_template
 import paho.mqtt.client as mqtt
 
 # ---- Configuration ----
-MQTT_BROKER = "dweb2025.nohost.me"
-MQTT_PORT = 1883
-MQTT_TOPIC = "msh/afterhours/2/json/broadcasts/#"
+MQTT_BROKER = os.environ.get("MQTT_BROKER", "dweb2025.nohost.me")
+MQTT_PORT = int(os.environ.get("MQTT_PORT", "1883"))
+MQTT_TOPIC = os.environ.get("MQTT_TOPIC", "msh/afterhours/2/json/broadcasts/#")
+WEB_PORT = int(os.environ.get("WEB_PORT", "5001"))
 
 app = Flask(__name__)
 
 # Thread-safe queue to pass messages from MQTT thread to SSE clients
 listeners = []
 listeners_lock = threading.Lock()
+
+# Deduplication: track recently seen message IDs
+seen_ids = set()
+MAX_SEEN = 500
 
 
 def broadcast(data):
@@ -42,6 +48,15 @@ def on_message(client, userdata, msg):
         # Skip non-JSON messages (encrypted protobuf packets)
         return
 
+    # Deduplicate — both devices uplink the same message
+    msg_id = payload.get("id")
+    if msg_id is not None:
+        if msg_id in seen_ids:
+            return
+        seen_ids.add(msg_id)
+        if len(seen_ids) > MAX_SEEN:
+            seen_ids.clear()
+
     message = {
         "topic": msg.topic,
         "from": payload.get("from"),
@@ -49,6 +64,7 @@ def on_message(client, userdata, msg):
         "type": payload.get("type"),
         "payload": payload.get("payload"),
         "timestamp": payload.get("timestamp"),
+        "sender": payload.get("sender"),
     }
 
     print(f"Message: {message}")
@@ -94,5 +110,5 @@ if __name__ == "__main__":
     mqtt_thread = threading.Thread(target=start_mqtt, daemon=True)
     mqtt_thread.start()
 
-    print("Starting web server on http://localhost:5001")
-    app.run(host="0.0.0.0", port=5001, threaded=True)
+    print(f"Starting web server on http://localhost:{WEB_PORT}")
+    app.run(host="0.0.0.0", port=WEB_PORT, threaded=True)

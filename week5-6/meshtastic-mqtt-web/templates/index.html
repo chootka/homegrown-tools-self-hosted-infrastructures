@@ -11,7 +11,29 @@
       font-family: "Courier New", monospace;
       background: #0a0a0a;
       color: #e0e0e0;
-      padding: 20px;
+      padding: 20px 40px;
+      transition: background 0.8s ease;
+    }
+
+    /* --- Stripes pattern --- */
+    body.stripes {
+      background-image: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 20px,
+        rgba(255,255,255,0.03) 20px,
+        rgba(255,255,255,0.03) 40px
+      );
+    }
+
+    /* --- Header --- */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 30px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 16px;
     }
 
     h1 {
@@ -23,35 +45,136 @@
     .subtitle {
       color: #666;
       font-size: 0.85em;
-      margin-bottom: 20px;
     }
 
     #status {
       font-size: 0.85em;
-      margin-bottom: 16px;
+      text-align: right;
     }
 
     .connected { color: #00cc66; }
     .disconnected { color: #cc3333; }
 
+    /* --- Two column layout --- */
+    .columns {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 40px;
+    }
+
+    @media (max-width: 900px) {
+      .columns { grid-template-columns: 1fr; }
+    }
+
+    /* --- Guide content --- */
+    .guide { line-height: 1.7; }
+
+    .guide h2 {
+      font-size: 1.2em;
+      color: #00cc66;
+      margin-top: 28px;
+      margin-bottom: 8px;
+    }
+
+    .guide h3 {
+      font-size: 1em;
+      color: #66ddaa;
+      margin-top: 20px;
+      margin-bottom: 6px;
+    }
+
+    .guide p {
+      font-size: 0.85em;
+      margin-bottom: 10px;
+      color: #ccc;
+    }
+
+    .guide ul, .guide ol {
+      font-size: 0.85em;
+      margin-left: 20px;
+      margin-bottom: 10px;
+      color: #ccc;
+    }
+
+    .guide li { margin-bottom: 4px; }
+
+    .guide code {
+      background: #1a1a2e;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 0.95em;
+      color: #f0f0f0;
+    }
+
+    .guide pre {
+      background: #1a1a2e;
+      padding: 12px 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 10px 0;
+      font-size: 0.8em;
+      border-left: 3px solid #333;
+    }
+
+    .guide pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .guide table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 0.8em;
+    }
+
+    .guide th, .guide td {
+      padding: 6px 10px;
+      text-align: left;
+      border-bottom: 1px solid #222;
+    }
+
+    .guide th { color: #00cc66; }
+
+    .guide strong { color: #e0e0e0; }
+
+    .guide blockquote {
+      border-left: 3px solid #cc8833;
+      padding: 8px 16px;
+      margin: 10px 0;
+      font-size: 0.85em;
+      color: #cc8833;
+    }
+
+    /* --- Messages sidebar --- */
+    .sidebar-title {
+      font-size: 0.9em;
+      color: #00cc66;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #333;
+    }
+
     #messages {
       display: flex;
       flex-direction: column;
       gap: 8px;
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
     .message {
       background: #151515;
       border-left: 3px solid #00cc66;
-      padding: 12px 16px;
+      padding: 10px 12px;
       border-radius: 2px;
       animation: fadeIn 0.3s ease;
     }
 
     .message .meta {
-      font-size: 0.75em;
+      font-size: 0.7em;
       color: #666;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
 
     .message .node {
@@ -60,45 +183,256 @@
     }
 
     .message .body {
-      font-size: 0.95em;
+      font-size: 0.85em;
       word-wrap: break-word;
     }
 
+    .message.command {
+      border-left-color: #cc33cc;
+      background: #1a0a1a;
+    }
+
     .message.nodeinfo { border-left-color: #3388cc; }
-    .message.nodeinfo .node { color: #3388cc; }
-
     .message.position { border-left-color: #cc8833; }
-    .message.position .node { color: #cc8833; }
-
     .message.telemetry { border-left-color: #8833cc; }
-    .message.telemetry .node { color: #8833cc; }
 
-    .empty {
-      color: #444;
-      font-style: italic;
-      margin-top: 40px;
-      text-align: center;
+    /* --- Redacted mode --- */
+    .redacted .redactable {
+      color: transparent !important;
+      background: #222;
+      border-radius: 3px;
+      user-select: none;
+      transition: all 0.3s ease;
+    }
+
+    .redacted .redactable * {
+      color: transparent !important;
+    }
+
+    .redacted .redactable code,
+    .redacted .redactable pre {
+      color: transparent !important;
+      background: #333;
+    }
+
+    .redacted .redactable th,
+    .redacted .redactable td,
+    .redacted .redactable strong {
+      color: transparent !important;
     }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(-4px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    body.rotate {
+      animation: spin 30s linear infinite;
+    }
   </style>
 </head>
 <body>
 
-  <h1>afterhours mesh</h1>
-  <p class="subtitle">live messages from the meshtastic network</p>
-  <p id="status" class="disconnected">connecting...</p>
-  <div id="messages">
-    <p class="empty" id="empty-msg">waiting for messages...</p>
+  <header>
+    <div>
+      <h1>afterhours mesh</h1>
+      <p class="subtitle">live messages from the meshtastic network</p>
+    </div>
+    <p id="status" class="disconnected">connecting...</p>
+  </header>
+
+  <div class="columns">
+    <div class="guide">
+
+      <h2>Meshtastic MQTT Setup Guide</h2>
+      <p>This guide walks through configuring Meshtastic devices to send and receive messages via an MQTT broker. All configuration is done through the Meshtastic mobile app.</p>
+
+      <h3>Overview</h3>
+      <pre><code>Meshtastic device → LoRa mesh → device with WiFi → MQTT broker → web app</code></pre>
+      <p class="redactable">A Meshtastic device connected to WiFi acts as a <strong>gateway</strong> between the LoRa mesh and the internet. It publishes mesh messages to an MQTT broker (<strong>uplink</strong>) and can receive messages from MQTT and broadcast them to the mesh (<strong>downlink</strong>).</p>
+
+      <h3>What is MQTT?</h3>
+      <p class="redactable">MQTT is a lightweight messaging protocol. A <strong>broker</strong> (server) receives messages from <strong>publishers</strong> and forwards them to <strong>subscribers</strong> based on <strong>topics</strong> (like channels). Meshtastic uses MQTT to bridge the LoRa mesh to the internet.</p>
+
+      <h3>What is Uplink / Downlink?</h3>
+      <ul class="redactable">
+        <li><strong>Uplink</strong>: mesh → MQTT. The device publishes messages it hears on the mesh to the MQTT broker.</li>
+        <li><strong>Downlink</strong>: MQTT → mesh. The device subscribes to MQTT topics and broadcasts incoming messages to the mesh.</li>
+      </ul>
+
+      <h3>Prerequisites</h3>
+      <ul class="redactable">
+        <li>A Meshtastic device (e.g. Heltec ESP32, T-Beam)</li>
+        <li>The Meshtastic mobile app (Android or iOS)</li>
+        <li>A WiFi network the device can connect to</li>
+        <li>An MQTT broker (e.g. Mosquitto running on a Raspberry Pi)</li>
+      </ul>
+
+      <h2>Step 1: Connect to WiFi</h2>
+      <p class="redactable">In the Meshtastic app, connect to your device via Bluetooth, then:</p>
+      <ol class="redactable">
+        <li>Go to <strong>Radio Configuration → Network</strong></li>
+        <li>Enable <strong>WiFi</strong></li>
+        <li>Enter your WiFi <strong>SSID</strong> and <strong>password</strong></li>
+        <li>Save — the device will reboot</li>
+      </ol>
+
+      <h2>Step 2: Create Channels</h2>
+      <p class="redactable">You need two channels:</p>
+
+      <h3>Primary vs Secondary Channels</h3>
+      <p class="redactable">Meshtastic supports up to 8 channels (0-7). <strong>Channel 0 is always the primary channel</strong> — you can only have one. It's the main channel the device uses for mesh communication. All other channels (1-7) are secondary. Think of it like a walkie-talkie: Channel 0 is the one you're always on, and the others are extra channels you can monitor at the same time.</p>
+
+      <h3>Channel 0 (primary): <code>broadcasts</code></h3>
+      <ol class="redactable">
+        <li>Go to <strong>Channels</strong></li>
+        <li>Edit Channel 0</li>
+        <li>Set the name to <code>broadcasts</code></li>
+        <li>Enable <strong>Uplink</strong> (publishes messages from this channel to MQTT)</li>
+        <li>Disable <strong>Downlink</strong></li>
+        <li>Save</li>
+      </ol>
+
+      <h3>Channel 1: <code>mqtt</code></h3>
+      <ol class="redactable">
+        <li>Add a new channel (Channel 1)</li>
+        <li>Set the name to <code>mqtt</code></li>
+        <li>Disable <strong>Uplink</strong></li>
+        <li>Enable <strong>Downlink</strong> (subscribes to MQTT and broadcasts incoming messages to the mesh)</li>
+        <li>Save</li>
+      </ol>
+
+      <h2>Step 3: Configure MQTT Module</h2>
+      <p class="redactable">Go to <strong>Module Configuration → MQTT</strong> and set:</p>
+      <table class="redactable">
+        <tr><th>Setting</th><th>Value</th></tr>
+        <tr><td>Enabled</td><td>on</td></tr>
+        <tr><td>Server Address</td><td><code>dweb2025.nohost.me</code></td></tr>
+        <tr><td>Username</td><td>(empty)</td></tr>
+        <tr><td>Password</td><td>(empty)</td></tr>
+        <tr><td>Encryption Enabled</td><td>off</td></tr>
+        <tr><td>JSON Enabled</td><td>on</td></tr>
+        <tr><td>TLS Enabled</td><td>off</td></tr>
+        <tr><td>Root Topic</td><td><code>msh/afterhours</code></td></tr>
+        <tr><td>Proxy to Client Enabled</td><td>off</td></tr>
+      </table>
+
+      <h3>What do these settings mean?</h3>
+      <ul class="redactable">
+        <li><strong>JSON Enabled</strong>: Publishes messages as human-readable JSON. Required for our web app.</li>
+        <li><strong>Encryption Enabled</strong>: Encrypts MQTT payloads. Must be off for JSON mode.</li>
+        <li><strong>Root Topic</strong>: Base of the MQTT topic tree. A custom topic keeps your traffic separate.</li>
+        <li><strong>Proxy to Client Enabled</strong>: Routes MQTT through a phone. Not needed with device WiFi.</li>
+        <li><strong>TLS Enabled</strong>: Encrypts broker connection. Not needed on a local/trusted network.</li>
+      </ul>
+
+      <h2>Step 4: Configure LoRa Settings</h2>
+      <p class="redactable">Go to <strong>Radio Configuration → LoRa</strong> and check:</p>
+      <table class="redactable">
+        <tr><th>Setting</th><th>Value</th></tr>
+        <tr><td>Ignore MQTT</td><td>false</td></tr>
+        <tr><td>OK to MQTT</td><td>true</td></tr>
+      </table>
+
+      <h2>Step 5: Verify</h2>
+      <p class="redactable">On a computer with mosquitto tools installed:</p>
+      <pre class="redactable"><code>mosquitto_sub -h dweb2025.nohost.me -p 1883 -t 'msh/afterhours/#' -v</code></pre>
+      <p class="redactable">Send a message from the Meshtastic app on the <code>broadcasts</code> channel. You should see it appear in the terminal.</p>
+
+      <h3>Topic Structure</h3>
+      <pre class="redactable"><code>{root_topic}/2/e/{channel_name}/{node_id}      ← protobuf (binary)
+{root_topic}/2/json/{channel_name}/{node_id}    ← JSON (readable)</code></pre>
+
+      <h3>Message Types</h3>
+      <table class="redactable">
+        <tr><th>Type</th><th>Description</th></tr>
+        <tr><td>text</td><td>A text message sent by a user</td></tr>
+        <tr><td>nodeinfo</td><td>Device info (name, hardware, role)</td></tr>
+        <tr><td>position</td><td>GPS coordinates</td></tr>
+        <tr><td>telemetry</td><td>Battery, voltage, temperature, etc.</td></tr>
+      </table>
+
+      <h2>Troubleshooting</h2>
+      <table class="redactable">
+        <tr><th>Problem</th><th>Fix</th></tr>
+        <tr><td>Device not connecting to broker</td><td>Check WiFi, verify broker address, check port 1883</td></tr>
+        <tr><td>No messages in MQTT</td><td>JSON Enabled must be on, uplink enabled on channel</td></tr>
+        <tr><td>Duplicate messages</td><td>Multiple devices uplinking — deduplicate by message ID</td></tr>
+        <tr><td>"Connection refused"</td><td>Check broker is running, firewall allows 1883</td></tr>
+      </table>
+
+    </div>
+
+    <div>
+      <div class="sidebar-title">live messages</div>
+      <div id="messages">
+        <p style="color: #444; font-style: italic; font-size: 0.85em;">waiting for messages...</p>
+      </div>
+    </div>
   </div>
 
   <script>
     const messagesDiv = document.getElementById('messages');
     const statusEl = document.getElementById('status');
-    const emptyMsg = document.getElementById('empty-msg');
+    let firstMessage = true;
+
+    // --- Command keywords ---
+    const COLORS = {
+      'blue': '#1a1a4e',
+      'red': '#4e1a1a',
+      'purple': '#3a1a4e',
+    };
+
+    function handleCommand(text) {
+      const cmd = text.toLowerCase().trim();
+
+      // Colors
+      if (COLORS[cmd]) {
+        document.body.style.backgroundColor = COLORS[cmd];
+        document.body.classList.remove('stripes');
+        return true;
+      }
+
+      // Stripes
+      if (cmd === 'stripes') {
+        document.body.classList.add('stripes');
+        return true;
+      }
+
+      // Reset background
+      if (cmd === 'reset') {
+        document.body.style.backgroundColor = '#0a0a0a';
+        document.body.classList.remove('stripes');
+        document.body.classList.remove('redacted');
+        document.body.classList.remove('rotate');
+        return true;
+      }
+
+      // Hide — redact all text
+      if (cmd === 'hide') {
+        document.body.classList.add('redacted');
+        return true;
+      }
+
+      // Show — un-redact
+      if (cmd === 'show') {
+        document.body.classList.remove('redacted');
+        return true;
+      }
+
+      // Rotate
+      if (cmd === 'rotate') {
+        document.body.classList.add('rotate');
+        return true;
+      }
+
+      return false;
+    }
 
     function connect() {
       const source = new EventSource('/stream');
@@ -116,46 +450,53 @@
       };
 
       source.onmessage = (event) => {
-        if (emptyMsg) emptyMsg.remove();
+        if (firstMessage) {
+          messagesDiv.innerHTML = '';
+          firstMessage = false;
+        }
 
         const data = JSON.parse(event.data);
         const el = document.createElement('div');
 
-        // Determine message type for styling
         let typeClass = '';
         let displayType = data.type || 'unknown';
         let body = '';
+        let isCommand = false;
 
         if (typeof data.payload === 'string') {
-          // Text message
           body = data.payload;
         } else if (data.payload && typeof data.payload === 'object') {
-          // Structured payload (nodeinfo, position, telemetry, etc.)
           if (data.payload.text) {
             body = data.payload.text;
           } else {
             body = JSON.stringify(data.payload, null, 2);
-            if (displayType.includes('NODEINFO')) typeClass = 'nodeinfo';
-            else if (displayType.includes('POSITION')) typeClass = 'position';
-            else if (displayType.includes('TELEMETRY')) typeClass = 'telemetry';
+            if (displayType.includes('nodeinfo')) typeClass = 'nodeinfo';
+            else if (displayType.includes('position')) typeClass = 'position';
+            else if (displayType.includes('telemetry')) typeClass = 'telemetry';
           }
         } else {
           body = JSON.stringify(data.payload);
+        }
+
+        // Check if it's a command
+        if (data.type === 'text' && body) {
+          isCommand = handleCommand(body);
+          if (isCommand) typeClass = 'command';
         }
 
         const time = data.timestamp
           ? new Date(data.timestamp * 1000).toLocaleTimeString()
           : new Date().toLocaleTimeString();
 
-        const nodeId = data.from || 'unknown';
+        const nodeId = data.sender || (data.from ? '!' + data.from.toString(16) : 'unknown');
 
         el.className = `message ${typeClass}`;
         el.innerHTML = `
           <div class="meta">
-            <span class="node">!${nodeId.toString(16)}</span>
-            &middot; ${displayType} &middot; ${time}
+            <span class="node">${nodeId}</span>
+            &middot; ${isCommand ? 'command' : displayType} &middot; ${time}
           </div>
-          <div class="body">${body.includes('\n') ? '<pre>' + body + '</pre>' : body}</div>
+          <div class="body">${body}</div>
         `;
 
         messagesDiv.prepend(el);
