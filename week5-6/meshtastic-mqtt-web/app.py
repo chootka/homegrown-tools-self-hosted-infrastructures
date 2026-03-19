@@ -9,8 +9,10 @@ import paho.mqtt.client as mqtt
 load_dotenv()
 
 # ---- Configuration ----
-MQTT_BROKER = os.environ.get("MQTT_BROKER", "dweb2025.nohost.me")
+MQTT_BROKER = os.environ.get("MQTT_BROKER", "mqtt.meshtastic.org")
 MQTT_PORT = int(os.environ.get("MQTT_PORT", "1883"))
+MQTT_USERNAME = os.environ.get("MQTT_USERNAME", "meshdev")
+MQTT_PASSWORD = os.environ.get("MQTT_PASSWORD", "large4cats")
 MQTT_TOPIC = os.environ.get("MQTT_TOPIC", "msh/afterhours/2/json/broadcasts/#")
 WEB_PORT = int(os.environ.get("WEB_PORT", "5001"))
 
@@ -76,6 +78,8 @@ def on_message(client, userdata, msg):
 
 def start_mqtt():
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+    if MQTT_USERNAME:
+        client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
     client.on_connect = on_connect
     client.on_message = on_message
     client.connect(MQTT_BROKER, MQTT_PORT, 60)
