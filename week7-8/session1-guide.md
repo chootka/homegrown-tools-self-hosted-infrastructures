@@ -54,7 +54,7 @@ This only lives in this terminal session — it's not saved anywhere.
 
 ### 5. Walk through the channels code
 
-Let's look at how a real project talks to Claude. Open these files:
+Let's look at how a real project talks to Claude. Browse the code at https://github.com/chootka/channels and open these files:
 
 **`channels.yaml`** — defines AI agents, one per radio channel:
 ```yaml
@@ -92,27 +92,70 @@ That's it. That's the entire interaction with Claude. Everything else in the pro
 
 ### 6. Write your first API script
 
-Create `hello_claude.py` on your laptop:
+Inside your `claude-lab` folder, create a file called `hello_claude.py`:
+
+```python
+import os
+import anthropic
+
+client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+
+response = client.messages.create(
+    model="claude-sonnet-4-5-20250929",
+    max_tokens=256,
+    system="You are a helpful assistant. Be concise.",
+    messages=[{"role": "user", "content": "What is a mesh network?"}],
+)
+
+print(response.content[0].text)
+```
+
+Run it:
 
 ```bash
 python hello_claude.py
 ```
 
-(File is in `starter-code/hello_claude.py`)
-
 Try changing the question. Try changing the system prompt. What happens if you tell it to respond in a different language? In haiku?
+
+(A copy of this file is also in the course repo at `starter-code/hello_claude.py`)
 
 ### 7. Make it interactive
 
-Run the chat script:
+Create `chat_claude.py` in your `claude-lab` folder:
+
+```python
+import os
+import anthropic
+
+client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+
+print("Chat with Claude. Type 'quit' to exit.\n")
+
+while True:
+    user_input = input("You: ")
+    if user_input.lower() == "quit":
+        break
+
+    response = client.messages.create(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=256,
+        system="You are a helpful assistant. Be concise.",
+        messages=[{"role": "user", "content": user_input}],
+    )
+
+    print(f"Claude: {response.content[0].text}\n")
+```
+
+Run it:
 
 ```bash
 python chat_claude.py
 ```
 
-(File is in `starter-code/chat_claude.py`)
-
 Type questions, have a conversation. Type `quit` to exit.
+
+(A copy of this file is also in the course repo at `starter-code/chat_claude.py`)
 
 ### 8. Discussion: what just happened?
 
