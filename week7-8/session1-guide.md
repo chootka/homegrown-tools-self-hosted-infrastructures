@@ -22,18 +22,17 @@ By the end, you'll understand what an API call looks like, why local matters, an
 ssh your-username@your-pi-address
 ```
 
-### 2. Clone the example project on your laptop
+### 2. Demo: Channels (instructor only)
 
-This is a real project that runs Claude AI agents on Meshtastic radio channels. We'll use it to understand how API calls work.
+Your instructor will demo a real project that runs Claude AI agents on Meshtastic radio channels. You can browse the code at https://github.com/chootka/channels — we'll walk through how it works together.
 
-```bash
-git clone https://github.com/chootka/channels.git
-cd channels
-```
+The key takeaway: the entire Claude API interaction is about 10 lines of Python.
 
 ### 3. Set up Python on your laptop
 
 ```bash
+mkdir ~/claude-lab
+cd ~/claude-lab
 python3 -m venv venv
 source venv/bin/activate
 pip install anthropic
