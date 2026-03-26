@@ -6,11 +6,11 @@ The `channels` repo (https://github.com/chootka/channels) runs Claude AI agents 
 
 ```
 Someone sends a radio message
-    → Your computer (laptop, Raspberry Pi, another computer) receives it over USB serial
+    → Your computer (laptop, Raspberry Pi, another computer) running this app receives it over USB serial
     → Python routes it to the right AI agent
     → Agent sends it to Claude's API
     → Claude responds
-    → Pi sends the response back over radio
+    → Computer sends the response back over radio
 ```
 
 ## The Files
