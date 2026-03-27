@@ -28,7 +28,9 @@ Your instructor will demo a real project that runs Claude AI agents on Meshtasti
 
 The key takeaway: the entire Claude API interaction is about 10 lines of Python.
 
-### 3. Set up Python on your laptop
+### 3. Set up Python on your Pi
+
+On the Pi (via SSH):
 
 ```bash
 mkdir ~/claude-lab
@@ -92,7 +94,7 @@ That's it. That's the entire interaction with Claude. Everything else in the pro
 
 ### 6. Write your first API script
 
-Inside your `claude-lab` folder, create a file called `hello_claude.py`:
+On your Pi, inside your `claude-lab` folder, create a file called `hello_claude.py`:
 
 ```python
 import os
@@ -118,11 +120,11 @@ python hello_claude.py
 
 Try changing the question. Try changing the system prompt. What happens if you tell it to respond in a different language? In haiku?
 
-(A copy of this file is also in the course repo at `starter-code/hello_claude.py`)
+(A copy of this file is also in the course repo at [`starter-code/hello_claude.py`](https://github.com/chootka/homegrown-tools-self-hosted-infrastructures/blob/main/week7-8/starter-code/hello_claude.py))
 
 ### 7. Make it interactive
 
-Create `chat_claude.py` in your `claude-lab` folder:
+Create `chat_claude.py` in your `claude-lab` folder on the Pi:
 
 ```python
 import os
@@ -155,7 +157,7 @@ python chat_claude.py
 
 Type questions, have a conversation. Type `quit` to exit.
 
-(A copy of this file is also in the course repo at `starter-code/chat_claude.py`)
+(A copy of this file is also in the course repo at [`starter-code/chat_claude.py`](https://github.com/chootka/homegrown-tools-self-hosted-infrastructures/blob/main/week7-8/starter-code/chat_claude.py))
 
 ### 8. Discussion: what just happened?
 
@@ -245,7 +247,7 @@ Copy `hello_ollama.py` to your Pi and run it:
 python hello_ollama.py
 ```
 
-(File is in `starter-code/hello_ollama.py`)
+(File is in [`starter-code/hello_ollama.py`](https://github.com/chootka/homegrown-tools-self-hosted-infrastructures/blob/main/week7-8/starter-code/hello_ollama.py))
 
 Ollama has a simple HTTP API at `http://localhost:11434`. You send a JSON request, you get a JSON response. No API key needed.
 
@@ -255,7 +257,7 @@ Ollama has a simple HTTP API at `http://localhost:11434`. You send a JSON reques
 python chat_ollama.py
 ```
 
-(File is in `starter-code/chat_ollama.py`)
+(File is in [`starter-code/chat_ollama.py`](https://github.com/chootka/homegrown-tools-self-hosted-infrastructures/blob/main/week7-8/starter-code/chat_ollama.py))
 
 Same chat loop as the Claude version, but everything runs on the Pi.
 

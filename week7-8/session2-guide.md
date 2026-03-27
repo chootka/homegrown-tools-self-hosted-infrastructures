@@ -64,7 +64,7 @@ A sentence gets converted into a list of numbers (a vector). Similar sentences p
 python index_docs.py
 ```
 
-(File is in `starter-code/index_docs.py`)
+(File is in [`starter-code/index_docs.py`](https://github.com/chootka/homegrown-tools-self-hosted-infrastructures/blob/main/week7-8/starter-code/index_docs.py))
 
 This stores 5 documents in Chroma and queries for similar ones. Look at the output — it returns the most relevant documents, not an exact keyword match.
 
@@ -87,7 +87,7 @@ Notice how it finds relevant documents even when you don't use the exact same wo
 python rag.py
 ```
 
-(File is in `starter-code/rag.py`)
+(File is in [`starter-code/rag.py`](https://github.com/chootka/homegrown-tools-self-hosted-infrastructures/blob/main/week7-8/starter-code/rag.py))
 
 This combines retrieval + generation:
 1. You ask a question
@@ -115,7 +115,7 @@ mkdir ~/my_notes
 python index_files.py ~/my_notes
 ```
 
-(File is in `starter-code/index_files.py`)
+(File is in [`starter-code/index_files.py`](https://github.com/chootka/homegrown-tools-self-hosted-infrastructures/blob/main/week7-8/starter-code/index_files.py))
 
 Then ask questions about your own documents.
 
@@ -134,7 +134,7 @@ Combine everything into a single app that:
 python knowledge_base.py ~/my_notes
 ```
 
-(File is in `starter-code/knowledge_base.py`)
+(File is in [`starter-code/knowledge_base.py`](https://github.com/chootka/homegrown-tools-self-hosted-infrastructures/blob/main/week7-8/starter-code/knowledge_base.py))
 
 ### 9. Experiment
 
