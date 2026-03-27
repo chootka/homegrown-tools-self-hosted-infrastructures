@@ -210,21 +210,6 @@ ollama run tinyllama "What is a mesh network?"
 
 It will take a moment — the Pi is doing all the computation locally.
 
-### 13. Prove it's local — turn off WiFi
-
-```bash
-# Disconnect WiFi
-sudo nmcli dev disconnect wlan0
-
-# Ask a question — still works!
-ollama run tinyllama "What is a mesh network?"
-
-# Reconnect
-sudo nmcli dev connect wlan0
-```
-
-**This is the key moment.** No internet, and it still works. Your data never left the device.
-
 ---
 
 ## Part 4: Talk to Ollama from Python (45 min)
