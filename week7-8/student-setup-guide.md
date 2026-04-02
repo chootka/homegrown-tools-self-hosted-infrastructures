@@ -1,4 +1,4 @@
-# Student Setup Guide: Local LLM + Meshtastic + MQTT
+# Walkthrough Guide: Local LLM + Meshtastic + MQTT
 
 A complete guide to setting up your own AI agent ecosystem on a Raspberry Pi. This guide assumes you're starting from zero and walks through every step.
 
