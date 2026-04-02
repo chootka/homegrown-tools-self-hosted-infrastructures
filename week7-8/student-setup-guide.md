@@ -56,7 +56,7 @@ Before starting, make sure you have all of these:
 │      LoRa radio           │  │  • Routes to the right agent      │  │  │
 │    (868 MHz)              │  │  • Agent asks Ollama for response  │  │  │
 │         │                 │  │  • Sends response back over radio  │  │  │
-│         ▼                 │  │  • Web-mistress publishes to MQTT  │  │  │
+│         ▼                 │  │  • Webmistress publishes to MQTT  │  │  │
 │  ┌──────────────┐  USB    │  │                                    │  │  │
 │  │  Meshtastic  │ serial  │  └──────────────────┬─────────────────┘  │  │
 │  │  Device #1   ├─────────┤                     │                     │  │
@@ -223,7 +223,7 @@ For each channel below, tap **Add Channel** (or the + button):
 |---|---|---|
 | 3 | sysop | Admin agent — BBS-style operator |
 | 4 | sheila | Conversational agent — sarcastic helper |
-| 5 | web-mistress | Controls the shared website via MQTT |
+| 5 | webmistress | Controls the shared website via MQTT |
 | 6 | lowviz | ASCII art agent — responds in patterns only |
 | 7 | mmmmmmorse | Morse code translator |
 
@@ -303,7 +303,7 @@ python main_ollama.py
 You should see:
 
 ```
-[router] Loaded 5 channels: 3=sysop, 4=sheila, 5=web-mistress, 6=lowviz, 7=mmmmmmorse
+[router] Loaded 5 channels: 3=sysop, 4=sheila, 5=webmistress, 6=lowviz, 7=mmmmmmorse
 [main] Connecting to Meshtastic device...
 [main] Using LOCAL Ollama — no internet or API key needed.
 [main] Listening for messages. Ctrl+C to quit.
@@ -332,8 +332,8 @@ From your phone's Meshtastic app (connected to the other device via Bluetooth):
 4. You should see a response appear in the Meshtastic app
 5. In the SSH terminal, you should see the message and response logged
 
-#### Test web-mistress (channel 5):
-1. Open channel 5 (web-mistress) in the Meshtastic app
+#### Test webmistress (channel 5):
+1. Open channel 5 (webmistress) in the Meshtastic app
 2. Type: "make it blue"
 3. Check the website at `https://mqtt.dweb2025.nohost.me` — the background should change
 4. Try: "rotate", "hide", "stripes", "reset"
@@ -383,7 +383,7 @@ From your phone's Meshtastic app (connected to the other device via Bluetooth):
 14.                                                              You see the reply ◄┘
 ```
 
-### When someone talks to web-mistress (channel 5):
+### When someone talks to webmistress (channel 5):
 
 Same flow as above, plus one extra step after the response is generated:
 
@@ -460,13 +460,13 @@ INSTRUCTOR'S PI (dweb2025.nohost.me):
 |---|---|---|---|
 | 3 | sysop | Admin commands, talks like a '90s BBS operator | "!status" |
 | 4 | sheila | Sarcastic but helpful conversational assistant | "What is TCP?" |
-| 5 | web-mistress | Controls the website — responds with commands | "make it purple" |
+| 5 | webmistress | Controls the website — responds with commands | "make it purple" |
 | 6 | lowviz | Responds only in 5-line ASCII art patterns | "hello" → art pattern |
 | 7 | mmmmmmorse | Translates to/from Morse code | "hello" → ".... . .-.. .-.. ---" |
 
-### Web-mistress commands
+### Webmistress commands
 
-The web-mistress agent understands natural language and translates it to one of these commands:
+The webmistress agent understands natural language and translates it to one of these commands:
 
 | Say something like... | Command sent | Effect on website |
 |---|---|---|
@@ -533,7 +533,7 @@ The web-mistress agent understands natural language and translates it to one of 
 │    https://mqtt.dweb2025.nohost.me               │
 │                                                  │
 │  Channels:                                       │
-│    3=sysop  4=sheila  5=web-mistress             │
+│    3=sysop  4=sheila  5=webmistress             │
 │    6=lowviz  7=mmmmmmorse                        │
 │                                                  │
 │  Stop the app:                                   │
