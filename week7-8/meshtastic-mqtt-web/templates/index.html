@@ -234,6 +234,39 @@
     body.rotate {
       animation: spin 30s linear infinite;
     }
+
+    /* --- Storytime mode --- */
+    body.storytime .guide {
+      display: none;
+    }
+
+    body.storytime .columns {
+      grid-template-columns: 1fr;
+    }
+
+    body.storytime #messages {
+      max-height: 85vh;
+      font-size: 1.2em;
+    }
+
+    body.storytime .sidebar-title {
+      font-size: 1.4em;
+      color: #cc8833;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    body.storytime .message {
+      max-width: 700px;
+      margin: 0 auto;
+      border-left-color: #cc8833;
+      padding: 16px 20px;
+    }
+
+    body.storytime .message .body {
+      font-size: 1.1em;
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
@@ -428,6 +461,20 @@
       // Rotate
       if (cmd === 'rotate') {
         document.body.classList.add('rotate');
+        return true;
+      }
+
+      // Storytime — messages take over the page
+      if (cmd === 'once upon a time...') {
+        document.body.classList.add('storytime');
+        document.querySelector('.sidebar-title').textContent = 'storytime';
+        return true;
+      }
+
+      // End storytime
+      if (cmd === 'the end.') {
+        document.body.classList.remove('storytime');
+        document.querySelector('.sidebar-title').textContent = 'live messages';
         return true;
       }
 
