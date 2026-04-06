@@ -79,11 +79,11 @@ Students can message each other's agents across the mesh. One person sends a mes
 
 ## This Session: RAG Pipeline
 
-Follow `session2-guide.md` in the repo (`week7-8/session2-guide.md`). The full step-by-step is there, but here's the overview:
+Follow `session2-guide.md` in the repo (`week7-9/session2-guide.md`). The full step-by-step is there, but here's the overview:
 
 ### Part 1: Embeddings + Vector Database (60 min)
 
-1. Explain what RAG is (use the glossary at `week7-8/glossary.md` — has diagrams)
+1. Explain what RAG is (use the glossary at `week7-9/glossary.md` — has diagrams)
 2. Students install ChromaDB on their Pis:
    ```bash
    cd ~/channels
@@ -107,10 +107,10 @@ Follow `session2-guide.md` in the repo (`week7-8/session2-guide.md`). The full s
 
 ### Starter code locations
 
-All scripts are in `week7-8/starter-code/` in the course repo, each in its own folder with a `requirements.txt`. Students can either type the code from the guide or clone the repo and run them directly:
+All scripts are in `week7-9/starter-code/` in the course repo, each in its own folder with a `requirements.txt`. Students can either type the code from the guide or clone the repo and run them directly:
 
 ```bash
-cd ~/homegrown-tools-self-hosted-infrastructures/week7-8/starter-code/rag
+cd ~/homegrown-tools-self-hosted-infrastructures/week7-9/starter-code/rag
 pip install -r requirements.txt
 python rag.py
 ```
@@ -148,6 +148,6 @@ The RAG scripts use Ollama at `localhost:11434` — make sure Ollama is running 
 - Course repo: https://github.com/chootka/homegrown-tools-self-hosted-infrastructures
 - Channels repo: https://github.com/chootka/channels
 - Website: https://mqtt.dweb2025.nohost.me
-- Glossary: `week7-8/glossary.md` in the course repo
-- Student setup guide: `week7-8/student-setup-guide.md`
-- Session 2 (RAG) guide: `week7-8/session2-guide.md`
+- Glossary: `week7-9/glossary.md` in the course repo
+- Student setup guide: `week7-9/student-setup-guide.md`
+- Session 2 (RAG) guide: `week7-9/session2-guide.md`
