@@ -40,12 +40,14 @@ Three steps:
 
 ## Part 1: Embeddings + Vector Database (60 min)
 
-### 1. Install ChromaDB on the Pi
+### 1. Set up a RAG project on the Pi
 
 ```bash
-cd ~/local-llm
+mkdir ~/rag-lab
+cd ~/rag-lab
+python3 -m venv venv
 source venv/bin/activate
-pip install chromadb
+pip install chromadb requests
 ```
 
 ### 2. What are embeddings?

@@ -96,11 +96,13 @@ Without RAG, the LLM guesses. With RAG, it answers from your documents.
 ### Part 1: Embeddings + Vector Database (60 min)
 
 1. Explain what RAG is (use the glossary at `week7-9/glossary.md` — has diagrams)
-2. Students install ChromaDB on their Pis:
+2. Students set up a RAG project on their Pis:
    ```bash
-   cd ~/channels
+   mkdir ~/rag-lab
+   cd ~/rag-lab
+   python3 -m venv venv
    source venv/bin/activate
-   pip install chromadb
+   pip install chromadb requests
    ```
 3. Run `index_docs.py` — stores sample documents, queries by similarity
 4. Students try different queries to see how vector search works (it matches by meaning, not keywords)
