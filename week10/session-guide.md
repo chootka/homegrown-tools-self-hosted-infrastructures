@@ -2,7 +2,7 @@
 
 ## What We're Doing
 
-Building a personal knowledge base that doesn't depend on any cloud service. We'll use Obsidian for writing and organizing, and IPFS for publishing and sharing — all from your Raspberry Pi.
+Building a personal knowledge base that doesn't depend on any cloud service. We'll use Obsidian for writing and organizing, and IPFS for publishing and sharing all from your Raspberry Pi.
 
 By the end of this session you'll have:
 - A personal knowledge base in Obsidian
