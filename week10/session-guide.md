@@ -63,6 +63,27 @@ Same content = same hash, always. Different content = different hash. This means
 - Duplicate files are automatically deduplicated
 - The address tells you nothing about where the file is — just what it is
 
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                     CONTENT ADDRESSING                           │
+│                                                                  │
+│  ┌──────────────┐        hash         ┌────────────────────────┐│
+│  │ my-essay.md  │ ──────────────────► │ QmT78zSuBmuS4z925WZ.. ││
+│  │ "IPFS is..." │        function     │                        ││
+│  └──────────────┘                     │  This IS the address.  ││
+│                                       │  It never changes for  ││
+│  Same file, same hash.               │  this exact content.   ││
+│  Different file, different hash.      └────────────────────────┘│
+│                                                                  │
+│  ┌──────────────┐        hash         ┌────────────────────────┐│
+│  │ my-essay.md  │ ──────────────────► │ QmfM2r8seH2GiRaC4es.. ││
+│  │ "IPFS is!!"  │  ← changed a       │                        ││
+│  └──────────────┘    character        │  Different content =   ││
+│                                       │  completely new hash   ││
+│                                       └────────────────────────┘│
+└──────────────────────────────────────────────────────────────────┘
+```
+
 ### How Does IPFS Find and Connect to Peers?
 
 Your Pi is probably behind a router on a home or school network. Normally, devices behind a router can't accept incoming connections — that's NAT (Network Address Translation). So how does IPFS work?
@@ -139,6 +160,48 @@ Local-first means:
 3. Sync is optional and on your terms
 4. No account, no subscription, no terms of service
 5. You can share when you choose to, not because a service forces you
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    CLOUD-FIRST (typical)                     │
+│                                                             │
+│  You write a note                                           │
+│       │                                                     │
+│       ▼                                                     │
+│  ┌─────────┐     internet      ┌──────────────────┐        │
+│  │ Your    │ ────────────────► │  Their Server    │        │
+│  │ Device  │ ◄──────────────── │  (Google, Notion)│        │
+│  └─────────┘                   └──────────────────┘        │
+│                                  │                          │
+│  • Need internet to write       │ They store it            │
+│  • They own the copy            │ They control access      │
+│  • They can read it             │ They can delete it       │
+│  • Service shuts down = gone    │ They charge you          │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                    LOCAL-FIRST (what we do)                  │
+│                                                             │
+│  You write a note                                           │
+│       │                                                     │
+│       ▼                                                     │
+│  ┌─────────────────────────────────┐                        │
+│  │  Your Device                    │                        │
+│  │  ┌───────────┐  ┌───────────┐  │                        │
+│  │  │ Obsidian  │  │ IPFS node │  │                        │
+│  │  │ (write)   │→ │ (publish) │──┼──► share when ready    │
+│  │  └───────────┘  └───────────┘  │                        │
+│  │                                 │                        │
+│  │  Your files. Your rules.       │                        │
+│  └─────────────────────────────────┘                        │
+│                                                             │
+│  • Works offline                                            │
+│  • You own every copy                                       │
+│  • No one can read it unless you share                      │
+│  • No service to shut down                                  │
+│  • Free forever                                             │
+└─────────────────────────────────────────────────────────────┘
+```
 
 Obsidian + IPFS embodies this: write locally in Obsidian, publish when ready via IPFS.
 
@@ -260,6 +323,35 @@ ipfs pin ls --type=recursive
 
 Obsidian is a note-taking app that stores everything as plain Markdown files in a folder on your computer. No cloud account required. No proprietary format. Just `.md` files you own.
 
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    YOUR OBSIDIAN VAULT                       │
+│                    (just a folder)                           │
+│                                                             │
+│  my-knowledge-base/                                         │
+│  ├── ipfs-notes.md          ← plain text file               │
+│  ├── decentralization.md    ← plain text file               │
+│  ├── local-first.md         ← plain text file               │
+│  └── ...                                                    │
+│                                                             │
+│  ┌──────────┐      [[link]]      ┌──────────────────┐      │
+│  │ ipfs-    │ ◄────────────────► │ decentralization │      │
+│  │ notes    │                    │                  │      │
+│  └──────────┘                    └────────┬─────────┘      │
+│       ▲                                   │                 │
+│       │             [[link]]              │                 │
+│       │         ┌─────────────────────────┘                 │
+│       │         ▼                                           │
+│       │    ┌─────────────┐                                  │
+│       └───►│ local-first │                                  │
+│   [[link]] │             │                                  │
+│            └─────────────┘                                  │
+│                                                             │
+│  Notes link to each other with [[double brackets]].         │
+│  Obsidian shows these as a visual graph.                    │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ### 7. Install Obsidian
 
 On your laptop (not the Pi):
@@ -322,6 +414,19 @@ In Obsidian, click the graph icon (or press `Ctrl+G` / `Cmd+G`). You'll see your
 ## Part 3: Publish Your Knowledge Base via IPFS (45 min)
 
 ### 11. Copy your vault to the Pi
+
+```
+┌─────────────────┐                    ┌─────────────────┐
+│  YOUR LAPTOP    │     scp -r         │  YOUR PI        │
+│                 │ ─────────────────► │                 │
+│  Obsidian vault │   (secure copy     │  ~/my-knowledge │
+│  ~/my-knowledge │    over SSH)       │  -base/         │
+│  -base/         │                    │                 │
+│                 │                    │  Then:          │
+│  Write here.    │                    │  ipfs add -r    │
+│  Edit here.     │                    │  → publish!     │
+└─────────────────┘                    └─────────────────┘
+```
 
 From your laptop, copy your Obsidian vault to the Pi:
 
@@ -393,6 +498,29 @@ Give the CID to someone else. They can access your knowledge base from any IPFS 
 ipfs cat <your-folder-CID>/ipfs-notes.md
 ```
 
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    SHARING VIA IPFS                           │
+│                                                              │
+│  You share a CID: QmXYZ...                                  │
+│                                                              │
+│  ┌─────────┐                           ┌─────────────────┐  │
+│  │  Your   │    IPFS network           │  Anyone with    │  │
+│  │  Pi     │ ◄───────────────────────► │  the CID        │  │
+│  │  (has   │                           │                 │  │
+│  │  the    │   "Who has QmXYZ?"        │  Browser:       │  │
+│  │  files) │   "I do!" ────────────►   │  ipfs.io/ipfs/  │  │
+│  └─────────┘                           │  QmXYZ...       │  │
+│                                        │                 │  │
+│  ┌─────────┐                           │  CLI:           │  │
+│  │ Friend's│   also has the files      │  ipfs cat       │  │
+│  │ Pi      │ ◄───────────────────────► │  QmXYZ...       │  │
+│  │ (pinned │   "I also have QmXYZ!"   └─────────────────┘  │
+│  │  it)    │                                                 │
+│  └─────────┘   More pins = more resilient                    │
+└──────────────────────────────────────────────────────────────┘
+```
+
 No server needed. No URL that can break. Just the content hash.
 
 ---
@@ -402,6 +530,32 @@ No server needed. No URL that can break. Just the content hash.
 ### The Problem
 
 Obsidian Sync costs money. Google Drive, Dropbox, iCloud — all centralized. How do you sync between devices without a cloud service?
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 SYNC: THE OLD WAY                            │
+│                                                             │
+│  Laptop ──► Dropbox/Google/iCloud ──► Phone                 │
+│                     │                                       │
+│              Their servers.                                  │
+│              Their rules.                                    │
+│              Their price.                                    │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                 SYNC: WITHOUT THE CLOUD                      │
+│                                                             │
+│  Option A: IPFS (publish/retrieve)                          │
+│  Laptop ──scp──► Pi ──ipfs add──► IPFS network ──► anyone  │
+│                                                             │
+│  Option B: Syncthing (real-time, device-to-device)          │
+│  Laptop ◄──────────────────────────────────► Pi             │
+│             direct sync, no middleman                       │
+│                                                             │
+│  Option C: Git (version-controlled)                         │
+│  Laptop ──push──► self-hosted Gitea ──pull──► Pi            │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ### Option A: IPFS as a publishing mechanism
 
