@@ -27,9 +27,14 @@ class DebouncedHandler(FileSystemEventHandler):
         self.publish_ipns = publish_ipns
         self._timer = None
         self._lock = threading.Lock()
+        self._publishing = False
 
     def on_any_event(self, event):
-        # ignore hidden files / dirs
+        # Ignore events while we're publishing (ipfs add touches files)
+        if self._publishing:
+            return
+
+        # Ignore hidden files / dirs
         if any(part.startswith(".") for part in event.src_path.split(os.sep)):
             return
 
@@ -42,6 +47,7 @@ class DebouncedHandler(FileSystemEventHandler):
             self._timer.start()
 
     def _publish(self):
+        self._publishing = True
         print(f"\nadding folder to IPFS: {self.folder}")
         try:
             result = subprocess.run(
@@ -70,6 +76,7 @@ class DebouncedHandler(FileSystemEventHandler):
             except subprocess.CalledProcessError as e:
                 print(f"error running ipfs name publish: {e.stderr.strip()}")
 
+        self._publishing = False
         print("\nwatching for changes...")
 
 
