@@ -373,7 +373,54 @@ Every time you update and re-add, you get a new CID (because the content changed
 ipfs name publish <your-folder-CID>
 ```
 
-This gives you a stable IPNS address that you can update whenever your content changes.
+This gives you a stable IPNS address (your node's peer ID, like `k51qzi5uqu5d...`) that you can update whenever your content changes. Access it at:
+
+```
+https://ipfs.io/ipns/<your-peer-id>
+```
+
+The IPNS name stays the same forever — when your content changes, you just run `ipfs name publish <new-CID>` and the same address points to the updated version.
+
+### Making it human-readable with DNSLink
+
+IPNS addresses are long hashes — not easy to remember or share. If you own a domain, you can link it to your IPFS content using a DNS TXT record.
+
+For example, to make your knowledge base available at `notes.yourdomain.com`:
+
+1. First publish to IPNS:
+   ```bash
+   ipfs name publish <your-folder-CID>
+   ```
+   Note the peer ID it returns (the `k51...` string).
+
+2. Add a TXT record to your DNS:
+   ```
+   Host: _dnslink.notes
+   Type: TXT
+   Value: dnslink=/ipns/<your-peer-id>
+   ```
+
+   Or point directly to a CID (no IPNS, but changes every update):
+   ```
+   Value: dnslink=/ipfs/<your-folder-CID>
+   ```
+
+3. Access it via any IPFS gateway:
+   ```
+   https://ipfs.io/ipns/notes.yourdomain.com
+   ```
+
+Now you have a human-readable URL that resolves through IPFS — no server needed, just a DNS record pointing at your content.
+
+```
+Traditional:
+  notes.example.com → a specific server → serves files
+
+DNSLink + IPFS:
+  notes.example.com → DNS TXT record → IPNS peer ID → IPFS network → your Pi serves files
+```
+
+This is optional — most students won't have a domain to test with, but it's good to understand how the pieces connect.
 
 ### Option B: Syncthing (peer-to-peer sync)
 
