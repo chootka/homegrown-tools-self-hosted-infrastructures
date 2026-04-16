@@ -2,17 +2,32 @@
 
 ## What We're Doing
 
-Building a personal knowledge base that doesn't depend on any cloud service. We'll use Obsidian for writing and organizing, and IPFS for publishing and sharing all from your Raspberry Pi.
+Building a personal knowledge base that doesn't depend on any cloud service. We'll use Obsidian for writing and organizing, Syncthing for automatic sync to your Pi, and IPFS for publishing — so every time you save a note, it gets published to the decentralized web automatically.
 
 By the end of this session you'll have:
 - A personal knowledge base in Obsidian
-- Content published and accessible via IPFS
-- An understanding of how content addressing works
-- A workflow for syncing and sharing without centralized platforms
+- Automatic sync from your laptop to your Pi via Syncthing
+- A file watcher that auto-publishes changes to IPFS
+- Content accessible to anyone via a content hash
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    THE FULL PIPELINE                             │
+│                                                                 │
+│  ┌──────────┐  auto-sync  ┌──────────┐  auto-publish  ┌──────┐│
+│  │ Obsidian │ ──────────► │ Your Pi  │ ─────────────► │ IPFS ││
+│  │ (laptop) │  Syncthing  │          │  file watcher  │      ││
+│  │          │             │          │                │      ││
+│  │ Write.   │  no manual  │ Receives │  Detects       │Anyone││
+│  │ Save.    │  steps.     │ changes  │  changes,      │can   ││
+│  │ Done.    │             │ auto.    │  runs          │access││
+│  └──────────┘             └──────────┘  ipfs add -r   └──────┘│
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## Core Concepts (30 min)
+## Core Concepts
 
 ### What is Decentralization?
 
@@ -37,16 +52,37 @@ Decentralized:
 IPFS (InterPlanetary File System) is a peer-to-peer protocol for storing and sharing files. Instead of asking a server "give me the file at this URL," you ask the network "give me the file with this content hash."
 
 ```
-Traditional web (location-based):
-  https://example.com/my-document.pdf
-  → "Go to this server, at this path"
-  → If the server goes down, the file is gone
-
-IPFS (content-based):
-  ipfs://QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o
-  → "Give me the file with this fingerprint"
-  → Anyone who has the file can serve it
-  → The hash IS the address — if the content changes, the hash changes
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  Traditional web (location-based):                              │
+│                                                                 │
+│    https://example.com/my-document.pdf                          │
+│    → "Go to THIS SERVER, at THIS PATH"                          │
+│    → If the server goes down, the file is gone                  │
+│                                                                 │
+│  ┌────────┐         request          ┌────────────────┐        │
+│  │ You    │ ───────────────────────► │ example.com    │        │
+│  │        │ ◄─────────────────────── │ (one server)   │        │
+│  └────────┘         response         └────────────────┘        │
+│                                       Server dies? File gone.   │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  IPFS (content-based):                                          │
+│                                                                 │
+│    ipfs://QmT78zSuBmuS4z925WZfrq...                             │
+│    → "Give me the file with THIS FINGERPRINT"                   │
+│    → Anyone who has the file can serve it                       │
+│                                                                 │
+│  ┌────────┐      "who has QmT78?"     ┌────────┐              │
+│  │ You    │ ────────────────────────► │ Node A │ has it!      │
+│  │        │                           └────────┘              │
+│  │        │ ────────────────────────► ┌────────┐              │
+│  │        │ ◄──────────────────────── │ Node B │ also has it! │
+│  └────────┘      here's the file      └────────┘              │
+│                                       No single point of       │
+│                                       failure.                  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ### Content Addressing
@@ -203,16 +239,16 @@ Local-first means:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Obsidian + IPFS embodies this: write locally in Obsidian, publish when ready via IPFS.
+Obsidian + Syncthing + IPFS embodies this: write locally in Obsidian, auto-sync to your Pi, auto-publish to the decentralized web.
 
 ---
 
-## Part 1: Install IPFS on Your Pi (30 min)
+## Part 1: Install IPFS on Your Pi
 
 ### 1. Download and install Kubo (the IPFS implementation)
 
 ```bash
-wget https://dist.ipfs.tech/kubo/v0.32.1/kubo_v0.40.1_linux-arm64.tar.gz
+wget https://dist.ipfs.tech/kubo/v0.40.1/kubo_v0.40.1_linux-arm64.tar.gz
 tar xvfz kubo_v0.40.1_linux-arm64.tar.gz
 cd kubo
 sudo bash install.sh
@@ -317,7 +353,7 @@ ipfs pin ls --type=recursive
 
 ---
 
-## Part 2: Obsidian for Knowledge Management (30 min)
+## Part 2: Obsidian for Knowledge Management
 
 ### What is Obsidian?
 
@@ -355,7 +391,7 @@ Obsidian is a note-taking app that stores everything as plain Markdown files in 
 ### 7. Install Obsidian
 
 On your laptop (not the Pi):
-- Download from https://obsidian.md
+- Download from https://obsidian.md (free for personal use, no account needed)
 - Install and open it
 
 ### 8. Create a vault
@@ -411,9 +447,164 @@ In Obsidian, click the graph icon (or press `Ctrl+G` / `Cmd+G`). You'll see your
 
 ---
 
-## Part 3: Publish Your Knowledge Base via IPFS (45 min)
+## Part 3: Auto-Sync with Syncthing
 
-### 11. Copy your vault to the Pi
+Syncthing syncs folders directly between devices — no cloud, no account, no server. We'll use it to keep your Obsidian vault in sync between your laptop and Pi automatically.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    SYNCTHING                                 │
+│                                                             │
+│  ┌──────────┐                         ┌──────────┐         │
+│  │ Laptop   │  ◄─── encrypted ────►   │ Pi       │         │
+│  │          │       peer-to-peer      │          │         │
+│  │ Obsidian │       sync              │ ~/my-    │         │
+│  │ vault    │                         │ knowledge│         │
+│  │          │  No cloud. No account.  │ -base    │         │
+│  └──────────┘  Just two devices.      └──────────┘         │
+│                                                             │
+│  Save a file on your laptop → appears on Pi in seconds.    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 11. Install Syncthing on the Pi
+
+```bash
+sudo apt install syncthing
+```
+
+Start it:
+
+```bash
+syncthing --no-browser &
+```
+
+Syncthing runs a web UI on port 8384. From your laptop, open an SSH tunnel to access it:
+
+```bash
+ssh -L 8384:localhost:8384 username@your-pi-address
+```
+
+Then open `http://localhost:8384` in your browser to see the Pi's Syncthing dashboard.
+
+### 12. Install Syncthing on your laptop
+
+- **Mac:** `brew install syncthing` then `syncthing`
+- **Windows:** Download from https://syncthing.net
+- **Linux:** `sudo apt install syncthing`
+
+Open `http://localhost:8384` (or `http://127.0.0.1:8384`) to see your laptop's Syncthing dashboard.
+
+Note: if your Pi's tunnel is also on port 8384, use a different local port for the tunnel:
+
+```bash
+ssh -L 8385:localhost:8384 username@your-pi-address
+```
+
+Then the Pi's dashboard is at `http://localhost:8385`.
+
+### 13. Connect the two devices
+
+1. On your **Pi's** Syncthing dashboard, find the **Device ID** (under Actions → Show ID)
+2. On your **laptop's** Syncthing dashboard, click **Add Remote Device** and paste the Pi's Device ID
+3. On the Pi, you'll see a prompt to accept the connection — accept it
+
+### 14. Share your Obsidian vault
+
+1. On your **laptop's** Syncthing dashboard, click **Add Folder**
+2. Set the **Folder Path** to your Obsidian vault (e.g. `~/Documents/my-knowledge-base`)
+3. Under **Sharing**, check the Pi device
+4. On the Pi, accept the folder share and set the path to `~/my-knowledge-base`
+
+Now any time you save a note in Obsidian, it automatically syncs to the Pi.
+
+**Before moving on, confirm:** Create or edit a note in Obsidian, then check `ls ~/my-knowledge-base` on the Pi — the file should appear within a few seconds.
+
+---
+
+## Part 4: Auto-Publish to IPFS
+
+Now we wire up the last piece — a file watcher on the Pi that automatically publishes to IPFS whenever your vault changes.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    AUTO-PUBLISH PIPELINE                     │
+│                                                             │
+│  You save a note in Obsidian                                │
+│       │                                                     │
+│       ▼                                                     │
+│  Syncthing syncs to Pi (seconds)                            │
+│       │                                                     │
+│       ▼                                                     │
+│  File watcher detects the change                            │
+│       │                                                     │
+│       ▼                                                     │
+│  ipfs add -r ~/my-knowledge-base                            │
+│       │                                                     │
+│       ▼                                                     │
+│  New CID printed — your content is live on IPFS             │
+│                                                             │
+│  No manual steps after setup.                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 15. Set up the auto-publish watcher
+
+On the Pi:
+
+```bash
+cd ~
+pip install watchdog
+```
+
+Copy the `ipfs-autopublish.py` script from the course repo, or create it:
+
+```bash
+wget https://raw.githubusercontent.com/chootka/homegrown-tools-self-hosted-infrastructures/main/week10/ipfs-autopublish.py
+```
+
+Run it:
+
+```bash
+python3 ipfs-autopublish.py ~/my-knowledge-base
+```
+
+You should see:
+
+```
+Watching ~/my-knowledge-base for changes...
+```
+
+### 16. Test the full pipeline
+
+1. Open Obsidian on your laptop
+2. Edit a note or create a new one
+3. Save it
+4. Watch the Pi terminal — within a few seconds you should see:
+   ```
+   Change detected, publishing to IPFS...
+   Published: QmNewCID...
+   Gateway: https://ipfs.io/ipfs/QmNewCID...
+   ```
+5. Open the gateway URL in your browser — your updated knowledge base is live
+
+### 17. Optional: Stable address with IPNS
+
+Run the watcher with the `--ipns` flag to also update your IPNS name on each publish:
+
+```bash
+python3 ipfs-autopublish.py ~/my-knowledge-base --ipns
+```
+
+This gives you a stable address that always points to the latest version. The first IPNS publish takes a minute or two, but after that it's faster.
+
+---
+
+## Part 5: Publish Your Knowledge Base Manually
+
+If you don't want to use Syncthing, you can always do it manually:
+
+### Copy your vault to the Pi
 
 ```
 ┌─────────────────┐                    ┌─────────────────┐
@@ -427,8 +618,6 @@ In Obsidian, click the graph icon (or press `Ctrl+G` / `Cmd+G`). You'll see your
 │  Edit here.     │                    │  → publish!     │
 └─────────────────┘                    └─────────────────┘
 ```
-
-From your laptop, copy your Obsidian vault to the Pi:
 
 ```bash
 scp -r ~/path/to/my-knowledge-base username@your-pi-address:~/my-knowledge-base
@@ -452,9 +641,7 @@ It works offline. Sync is optional.
 No account, no subscription, no terms of service.' > ~/my-knowledge-base/local-first.md
 ```
 
-### 12. Add the entire folder to IPFS
-
-On the Pi:
+### Add the entire folder to IPFS
 
 ```bash
 ipfs add -r ~/my-knowledge-base
@@ -471,7 +658,7 @@ added QmXYZ... my-knowledge-base
 
 The last CID is the folder — it's a directory you can browse.
 
-### 13. Access your knowledge base via a gateway
+### Access your knowledge base via a gateway
 
 Open in a browser:
 
@@ -481,15 +668,13 @@ https://ipfs.io/ipfs/<your-folder-CID>
 
 You should see a file listing of your vault. Click any `.md` file to view it.
 
-### 14. Pin the folder
+### Pin the folder
 
 ```bash
 ipfs pin add <your-folder-CID>
 ```
 
-Now your knowledge base is pinned on your Pi and accessible via IPFS.
-
-### 15. Share it
+### Share it
 
 Give the CID to someone else. They can access your knowledge base from any IPFS gateway or their own IPFS node:
 
@@ -525,49 +710,11 @@ No server needed. No URL that can break. Just the content hash.
 
 ---
 
-## Part 4: Sync Without Cloud Services (30 min)
+## IPNS and Human-Readable Names
 
-### The Problem
+### IPNS (IPFS Name System)
 
-Obsidian Sync costs money. Google Drive, Dropbox, iCloud — all centralized. How do you sync between devices without a cloud service?
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                 SYNC: THE OLD WAY                            │
-│                                                             │
-│  Laptop ──► Dropbox/Google/iCloud ──► Phone                 │
-│                     │                                       │
-│              Their servers.                                  │
-│              Their rules.                                    │
-│              Their price.                                    │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│                 SYNC: WITHOUT THE CLOUD                      │
-│                                                             │
-│  Option A: IPFS (publish/retrieve)                          │
-│  Laptop ──scp──► Pi ──ipfs add──► IPFS network ──► anyone  │
-│                                                             │
-│  Option B: Syncthing (real-time, device-to-device)          │
-│  Laptop ◄──────────────────────────────────► Pi             │
-│             direct sync, no middleman                       │
-│                                                             │
-│  Option C: Git (version-controlled)                         │
-│  Laptop ──push──► self-hosted Gitea ──pull──► Pi            │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Option A: IPFS as a publishing mechanism
-
-This isn't real-time sync, but it's a publish/retrieve workflow:
-
-1. Write notes in Obsidian on your laptop
-2. Copy to Pi: `scp -r ~/my-knowledge-base pi:~/my-knowledge-base`
-3. Publish to IPFS: `ipfs add -r ~/my-knowledge-base`
-4. Share the new CID
-5. Someone else retrieves: `ipfs get <CID>`
-
-Every time you update and re-add, you get a new CID (because the content changed). You can use **IPNS** (IPFS Name System) to have a stable address that points to the latest version:
+Every time you update and re-add your vault, you get a new CID (because the content changed). IPNS gives you a stable address that you can update to point to the latest version:
 
 ```bash
 ipfs name publish <your-folder-CID>
@@ -622,38 +769,42 @@ DNSLink + IPFS:
 
 This is optional — most students won't have a domain to test with, but it's good to understand how the pieces connect.
 
-### Option B: Syncthing (peer-to-peer sync)
-
-For real-time sync between devices without any cloud:
-
-```bash
-sudo apt install syncthing
-```
-
-Syncthing syncs folders directly between your devices over the local network (or internet). No server, no account. Your Obsidian vault stays in sync across laptop and Pi automatically.
-
-### Option C: Git
-
-Your vault is just Markdown files — you can use git:
-
-```bash
-cd ~/my-knowledge-base
-git init
-git add .
-git commit -m "initial notes"
-```
-
-Push to a self-hosted Gitea, or even just sync between devices with `git push`/`pull`.
-
 ---
 
-## Discussion (15 min)
+## Discussion
 
 ### What we built
 
+```
+┌────────────────────────────────────────────────────────────────┐
+│                    THE LOCAL-FIRST STACK                        │
+│                                                                │
+│  ┌────────────────────────────────────────┐                    │
+│  │  Obsidian (writing, thinking, linking) │                    │
+│  │  → Plain Markdown files on YOUR device │                    │
+│  └──────────────────┬─────────────────────┘                    │
+│                     │ auto-sync                                │
+│                     ▼                                          │
+│  ┌────────────────────────────────────────┐                    │
+│  │  Syncthing (laptop ↔ Pi)              │                    │
+│  │  → Device-to-device, no cloud          │                    │
+│  └──────────────────┬─────────────────────┘                    │
+│                     │ auto-publish                             │
+│                     ▼                                          │
+│  ┌────────────────────────────────────────┐                    │
+│  │  IPFS (publishing, sharing)            │                    │
+│  │  → Content-addressed, peer-to-peer     │                    │
+│  │  → No server needed                    │                    │
+│  └────────────────────────────────────────┘                    │
+│                                                                │
+│  Everything runs on hardware you own.                          │
+│  No accounts. No subscriptions. No lock-in.                    │
+└────────────────────────────────────────────────────────────────┘
+```
+
 - A personal knowledge base in Obsidian (plain Markdown, no lock-in)
-- Content published on IPFS (content-addressed, decentralized)
-- No cloud accounts, no subscriptions, no terms of service
+- Auto-synced to your Pi via Syncthing (no cloud, no account)
+- Auto-published to IPFS (content-addressed, decentralized)
 - Accessible to anyone with the CID
 - Persistent as long as at least one node pins it
 
@@ -666,31 +817,6 @@ Push to a self-hosted Gitea, or even just sync between devices with `git push`/`
 | Can break? | Yes — server goes down, link dies | No — hash is permanent |
 | Verifiable? | No — server could change the file | Yes — hash proves integrity |
 | Censorship | Block the server, block the content | Content lives on many nodes |
-
-### The local-first stack
-
-```
-┌────────────────────────────────────────┐
-│  Obsidian (writing, thinking, linking) │
-│  → Plain Markdown files on YOUR device │
-└──────────────────┬─────────────────────┘
-                   │
-                   ▼
-┌────────────────────────────────────────┐
-│  IPFS (publishing, sharing)            │
-│  → Content-addressed, peer-to-peer     │
-│  → No server needed                    │
-└──────────────────┬─────────────────────┘
-                   │
-                   ▼
-┌────────────────────────────────────────┐
-│  Syncthing / Git (syncing)             │
-│  → Device-to-device, no cloud          │
-└────────────────────────────────────────┘
-
-Everything runs on hardware you own.
-No accounts. No subscriptions. No lock-in.
-```
 
 ---
 
@@ -712,6 +838,20 @@ ipfs name publish <CID>           # Publish CID to your IPNS name
 # Gateway access (browser)
 https://ipfs.io/ipfs/<CID>        # Public gateway
 http://localhost:8080/ipfs/<CID>  # Your local gateway (if daemon is running)
+
+# Syncthing
+syncthing --no-browser &          # Start Syncthing on Pi
+ssh -L 8384:localhost:8384 pi     # Tunnel to access Pi's Syncthing UI
+
+# Auto-publish watcher
+python3 ipfs-autopublish.py ~/my-knowledge-base         # Watch and publish
+python3 ipfs-autopublish.py ~/my-knowledge-base --ipns   # Watch, publish, and update IPNS
+
+# Reset everything (clean slate)
+kill $(pgrep ipfs)
+rm -rf ~/.ipfs ~/my-knowledge-base ~/hello.txt
+ipfs init
+ipfs daemon &
 ```
 
 ## Troubleshooting
@@ -720,7 +860,10 @@ http://localhost:8080/ipfs/<CID>  # Your local gateway (if daemon is running)
 |---|---|
 | `ipfs: command not found` | Re-run the install steps |
 | Daemon won't start | Check if another instance is running: `ps aux \| grep ipfs` |
+| Port 5001 in use | `ipfs config Addresses.API /ip4/127.0.0.1/tcp/5003` |
 | File not accessible via gateway | Is your daemon running? Is the file pinned? |
 | Gateway is slow | Public gateways can be slow — use your local gateway at `localhost:8080` |
 | IPNS publish is slow | Normal — IPNS propagation takes 1-2 minutes |
 | Can't reach Pi's IPFS from laptop | Check firewall, ports 4001 (swarm) and 8080 (gateway) need to be open |
+| Syncthing devices don't see each other | Make sure both are on the same network, check Device IDs are correct |
+| Auto-publish not triggering | Check the watcher is running, check Syncthing is actually syncing |
