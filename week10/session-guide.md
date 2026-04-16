@@ -171,6 +171,27 @@ https://ipfs.io/ipfs/QmXgZAUWd8yo4tvjBETnzRg328i1YsLYHGkGKtHr1RZqK8
 
 Your file is now accessible to anyone on the internet — served from your Pi via the IPFS network.
 
+### How does this work?
+
+Right now, your Pi is the only node that has this file. When someone opens the gateway link:
+
+1. The `ipfs.io` gateway asks the IPFS network "who has this CID?"
+2. Your Pi's IPFS daemon responds "I have it"
+3. The gateway fetches the content directly from your Pi and serves it to the browser
+4. The gateway may cache it temporarily
+
+```
+Browser → ipfs.io gateway → "who has QmXYZ?" → IPFS network → your Pi
+                                                                  │
+                                          your Pi sends the file ◄┘
+                                                  │
+                              gateway serves it ◄──┘
+                                      │
+                      browser shows it ◄┘
+```
+
+If you stopped your IPFS daemon right now, the file would become unavailable (unless the gateway cached it). That's why pinning and having multiple nodes matters — if you want content to survive your Pi going offline, other nodes need to pin it too.
+
 ### 6. Pin it
 
 ```bash
@@ -262,7 +283,23 @@ From your laptop, copy your Obsidian vault to the Pi:
 scp -r ~/path/to/my-knowledge-base username@your-pi-address:~/my-knowledge-base
 ```
 
-Or if your vault is small, create the files directly on the Pi.
+Or create the files directly on the Pi:
+
+```bash
+mkdir ~/my-knowledge-base
+
+echo '# IPFS Notes
+
+IPFS uses content addressing instead of location addressing.
+Every file gets a unique hash (CID) based on its contents.
+Same content = same hash, always.' > ~/my-knowledge-base/ipfs-notes.md
+
+echo '# Local-First
+
+Your data lives on your device first.
+It works offline. Sync is optional.
+No account, no subscription, no terms of service.' > ~/my-knowledge-base/local-first.md
+```
 
 ### 12. Add the entire folder to IPFS
 
