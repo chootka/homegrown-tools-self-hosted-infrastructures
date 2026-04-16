@@ -63,6 +63,52 @@ Same content = same hash, always. Different content = different hash. This means
 - Duplicate files are automatically deduplicated
 - The address tells you nothing about where the file is — just what it is
 
+### How Does IPFS Find and Connect to Peers?
+
+Your Pi is probably behind a router on a home or school network. Normally, devices behind a router can't accept incoming connections — that's NAT (Network Address Translation). So how does IPFS work?
+
+IPFS uses several techniques to connect peers:
+
+**1. DHT (Distributed Hash Table)** — a shared directory across the network. When you add a file, your node announces "I have CID QmXYZ..." to the DHT. When someone wants that file, they look it up in the DHT to find which nodes have it.
+
+```
+You add a file:
+  Your node → tells the DHT → "I have QmXYZ at this address"
+
+Someone requests it:
+  Their node → asks the DHT → "Who has QmXYZ?"
+  DHT responds → "Node X has it, here's how to reach them"
+```
+
+**2. Hole Punching** — when two nodes are both behind NAT, IPFS tries to "punch" through by coordinating via a third node that both can reach. Both nodes send outbound packets at the same time, creating temporary holes in their NAT that allow direct communication.
+
+```
+Your Pi (behind NAT) ←──✗──→ Their laptop (behind NAT)
+         │                            │
+         └──→ Relay node ←──┘
+              "Hey, both of you
+               send packets NOW"
+         │                            │
+         └──── hole punched ──────────┘
+              direct connection!
+```
+
+**3. Relay Nodes** — if hole punching fails, IPFS falls back to relay nodes. These are public IPFS nodes that forward traffic between peers who can't connect directly. It's slower but it works.
+
+```
+Your Pi → relay node → their laptop
+         (public node forwards traffic)
+```
+
+**4. Bootstrap Nodes** — when your IPFS daemon starts, it connects to a set of well-known public nodes (bootstrap nodes) to join the network and discover other peers. These are the entry point into the IPFS swarm.
+
+**In practice, this means:**
+- Your Pi doesn't need port forwarding or a VPN
+- It doesn't need a public IP address
+- It works behind home routers, school networks, coffee shop WiFi
+- The IPFS daemon handles all of this automatically when you run `ipfs daemon`
+- Port 4001 is used for swarm connections — if your network is very restrictive, IPFS will fall back to relays
+
 ### Pinning and Persistence
 
 IPFS is not permanent storage by default. Files are cached temporarily by nodes that access them, but they can be garbage collected. To keep content available:
