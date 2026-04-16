@@ -133,6 +133,13 @@ ipfs daemon &
 
 This connects your Pi to the IPFS network. Leave it running.
 
+If you get an error like `address already in use` on port 5001, another service is using that port. Change the IPFS API port:
+
+```bash
+ipfs config Addresses.API /ip4/127.0.0.1/tcp/5003
+ipfs daemon &
+```
+
 **Before moving on, confirm:** You see "Daemon is ready" in the output.
 
 ### 4. Test it — add a file
