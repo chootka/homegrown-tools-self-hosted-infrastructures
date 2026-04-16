@@ -505,20 +505,29 @@ Then the Pi's dashboard is at `http://localhost:8385`.
 
 ### 13. Connect the two devices
 
-1. On your **Pi's** Syncthing dashboard, find the **Device ID** (under Actions → Show ID)
-2. On your **laptop's** Syncthing dashboard, click **Add Remote Device** and paste the Pi's Device ID
-3. On the Pi, you'll see a prompt to accept the connection — accept it
+You need to add Device IDs in **both directions**:
+
+1. On your **Pi's** Syncthing dashboard, go to **Actions → Show ID** and copy the Device ID
+2. On your **laptop's** Syncthing dashboard, click **Add Remote Device** and paste the Pi's Device ID. Save.
+3. On your **laptop's** Syncthing dashboard, go to **Actions → Show ID** and copy your laptop's Device ID
+4. On the **Pi's** Syncthing dashboard, click **Add Remote Device** and paste your laptop's Device ID. Save.
+
+Both sides need to know about each other. After a few seconds, they should show as "Connected" in both dashboards.
+
+**Before moving on, confirm:** Both dashboards show the other device as connected.
 
 ### 14. Share your Obsidian vault
 
 1. On your **laptop's** Syncthing dashboard, click **Add Folder**
 2. Set the **Folder Path** to your Obsidian vault (e.g. `~/Documents/my-knowledge-base`)
-3. Under **Sharing**, check the Pi device
-4. On the Pi, accept the folder share and set the path to `~/my-knowledge-base`
+3. Under **Sharing**, check the Pi device — if you don't see it listed, the devices aren't connected yet (go back to step 13)
+4. Save
+5. On the **Pi's** Syncthing dashboard, you'll see a prompt to accept the shared folder
+6. Accept it and set the path to `~/my-knowledge-base`
 
 Now any time you save a note in Obsidian, it automatically syncs to the Pi.
 
-**Before moving on, confirm:** Create or edit a note in Obsidian, then check `ls ~/my-knowledge-base` on the Pi — the file should appear within a few seconds.
+**Before moving on, confirm:** Create or edit a note in Obsidian, then check `ls ~/my-knowledge-base` on the Pi — the file should appear within a few seconds. Syncthing can take 5-10 seconds to sync.
 
 ---
 
@@ -550,22 +559,27 @@ Now we wire up the last piece — a file watcher on the Pi that automatically pu
 
 ### 15. Set up the auto-publish watcher
 
-On the Pi:
+On the Pi, if you haven't already, clone the course repo:
 
 ```bash
 cd ~
-pip install watchdog
+git clone https://github.com/chootka/homegrown-tools-self-hosted-infrastructures.git
 ```
 
-Copy the `ipfs-autopublish.py` script from the course repo, or create it:
+Or if you already have it, pull the latest:
 
 ```bash
-wget https://raw.githubusercontent.com/chootka/homegrown-tools-self-hosted-infrastructures/main/week10/ipfs-autopublish.py
+cd ~/homegrown-tools-self-hosted-infrastructures
+git pull
 ```
 
-Run it:
+Set up and run the watcher:
 
 ```bash
+cd ~/homegrown-tools-self-hosted-infrastructures/week10
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 python3 ipfs-autopublish.py ~/my-knowledge-base
 ```
 
@@ -847,11 +861,17 @@ ssh -L 8384:localhost:8384 pi     # Tunnel to access Pi's Syncthing UI
 python3 ipfs-autopublish.py ~/my-knowledge-base         # Watch and publish
 python3 ipfs-autopublish.py ~/my-knowledge-base --ipns   # Watch, publish, and update IPNS
 
-# Reset everything (clean slate)
+# Reset everything (clean slate) — run on the Pi
 kill $(pgrep ipfs)
-rm -rf ~/.ipfs ~/my-knowledge-base ~/hello.txt
+kill $(pgrep syncthing)
+rm -rf ~/.ipfs ~/my-knowledge-base ~/hello.txt ~/kubo
+rm -rf ~/.local/state/syncthing ~/.config/syncthing
 ipfs init
 ipfs daemon &
+
+# Reset Syncthing on your laptop
+kill $(pgrep syncthing)
+rm -rf ~/.local/state/syncthing ~/.config/syncthing
 ```
 
 ## Troubleshooting
@@ -867,3 +887,7 @@ ipfs daemon &
 | Can't reach Pi's IPFS from laptop | Check firewall, ports 4001 (swarm) and 8080 (gateway) need to be open |
 | Syncthing devices don't see each other | Make sure both are on the same network, check Device IDs are correct |
 | Auto-publish not triggering | Check the watcher is running, check Syncthing is actually syncing |
+| Syncthing sync is slow | Normal — it polls every few seconds. Give it 5-10 seconds |
+| Pi can't resolve DNS (e.g. `ping google.com` fails but `ping 8.8.8.8` works) | Run: `echo "nameserver 8.8.8.8" \| sudo tee /etc/resolv.conf` |
+| Deleted files but gateway still shows them | The gateway cached them. Caches expire eventually. You can't force-delete content from IPFS once others have accessed it — this is a feature of content addressing |
+| Obsidian vault deleted but still in Obsidian app | Dismiss the "vault not found" message or remove it from the vault list in Obsidian |
