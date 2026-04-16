@@ -103,8 +103,8 @@ Obsidian + IPFS embodies this: write locally in Obsidian, publish when ready via
 ### 1. Download and install Kubo (the IPFS implementation)
 
 ```bash
-wget https://dist.ipfs.tech/kubo/v0.32.1/kubo_v0.32.1_linux-arm64.tar.gz
-tar xvfz kubo_v0.32.1_linux-arm64.tar.gz
+wget https://dist.ipfs.tech/kubo/v0.32.1/kubo_v0.40.1_linux-arm64.tar.gz
+tar xvfz kubo_v0.40.1_linux-arm64.tar.gz
 cd kubo
 sudo bash install.sh
 ```
